@@ -1,11 +1,14 @@
 ;; shadow-cljs configuration
 {:source-paths
- ["src/dev"
-  "src/main"
-  "src/test"]
+ ["src"]
 
  :dependencies
  []
 
  :builds
- {}}
+ {:game
+  {:target :browser
+   :modules {:main {:init-fn blockland.main/init}}
+   :devtools
+   {:http-root "public"
+    :http-port 8080}}}}
