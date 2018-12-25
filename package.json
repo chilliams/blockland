@@ -6,7 +6,6 @@
     "shadow-cljs": "2.7.9"
   },
   "dependencies": {
-    "ammo.js": "github:kripken/ammo.js",
     "three": "^0.99.0"
   }
 }

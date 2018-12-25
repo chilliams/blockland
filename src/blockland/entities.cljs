@@ -1,6 +1,5 @@
 (ns blockland.entities
-  (:require [blockland.ammo :refer [ammo]]
-            [three :as three]))
+  (:require [three :as three]))
 
 (defn calculate-box-shape [geometry]
   (.computeBoundingBox geometry)
@@ -22,7 +21,8 @@
         body (js/Ammo.btRigidBody. body-info)]
     (.set (.-position mesh) x y z)
     {:model mesh
-     :bullet {:body body}}))
+     :bullet {:body-info body-info
+              :body body}}))
 
 (defn create-ground [x y z]
   (create-static-entity (three/BoxGeometry. 40 1 40) x y z))
@@ -37,18 +37,25 @@
   (let [geometry (three/CylinderGeometry. 2 2 6)
         material (three/MeshNormalMaterial.)
         mesh (three/Mesh. geometry material)
+        _ (.set (.-position mesh) x y z)
+        transform (js/Ammo.btTransform.)
+        _ (.setOrigin transform (js/Ammo.btVector3 x y z))
         ghost-object (js/Ammo.btPairCachingGhostObject.)
+        _ (.setWorldTransform ghost-object transform)
         ghost-shape (js/Ammo.btCapsuleShape. 2 2)
+        _ (.setCollisionShape ghost-object ghost-shape)
+        _ (.setCollisionFlags ghost-object 16)
         controller (js/Ammo.btKinematicCharacterController.
                     ghost-object
                     ghost-shape
                     0.35)]
-    (.set (.-position mesh) x y z)
-    (.setCollisionShape ghost-object ghost-shape)
-    (.setCollisionFlags ghost-object 16)
     (.addCollisionObject world ghost-object 32 -1)
     (.addAction world controller)
-    {:model mesh}))
+    {:model mesh
+     :character {:transform transform
+                 :ghost-shape ghost-shape
+                 :ghost-object ghost-object
+                 :controller controller}}))
 
 (comment
 

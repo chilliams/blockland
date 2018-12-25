@@ -1,5 +1,4 @@
-(ns blockland.bullet
-  (:require [blockland.ammo :refer [ammo]]))
+(ns blockland.bullet)
 
 (defn create-bullet-world []
   (let [config (js/Ammo.btDefaultCollisionConfiguration.)
@@ -15,8 +14,8 @@
 
 (def max-sub-steps 5)
 (def fixed-time-step (/ 1 60))
-(defn bullet-system! [world]
-  (.stepSimulation world delta-time max-sub-steps fixed-time-step))
+(defn bullet-system! [world delta-time]
+  (.stepSimulation world 1 max-sub-steps fixed-time-step))
 
 (comment
 
