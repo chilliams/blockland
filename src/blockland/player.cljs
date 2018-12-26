@@ -7,6 +7,7 @@
                         camera
                         delta-time
                         keys-pressed]
+  ;; (js/console.log (.canJump controller))
   ;; (.setWalkDirection controller (js/Ammo.btVector3. 0.01 0 -0.01))
   (let [[x y z] (-> ghost-object
                     (.getWorldTransform)

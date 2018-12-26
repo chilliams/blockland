@@ -1,5 +1,6 @@
 (ns blockland.entities
-  (:require [three :as three]))
+  (:require [blockland.ammo :as ammo]
+            [three :as three]))
 
 (defn create-box-shape [geometry]
   (.computeBoundingBox geometry)
@@ -10,7 +11,7 @@
         height (- (.-y mx) (.-y mn))
         depth (- (.-z mx) (.-z mn))]
     (js/Ammo.btBoxShape.
-     (js/Ammo.btVector3. width height depth))))
+     (js/Ammo.btVector3. (/ width 2) (/ height 2) (/ depth 2)))))
 
 (defn create-static-entity [geometry x y z]
   (let [material (three/MeshNormalMaterial.)
@@ -19,10 +20,8 @@
         body-info (js/Ammo.btRigidBodyConstructionInfo.
                    0 nil col (js/Ammo.btVector3.))
         body (js/Ammo.btRigidBody. body-info)
-        transform (js/Ammo.btTransform.)]
-    (.setIdentity transform)
-    (.setOrigin transform (js/Ammo.btVector3. x y z))
-    (.setMotionState body (js/Ammo.btDefaultMotionState. transform))
+        motion-state (js/Ammo.btDefaultMotionState. (ammo/transform x y z))]
+    (.setMotionState body motion-state)
     (.set (.-position mesh) x y z)
     {:mesh mesh
      :body body}))
@@ -40,12 +39,10 @@
   (let [geometry (three/CylinderGeometry. 2 2 6)
         material (three/MeshNormalMaterial.)
         mesh (three/Mesh. geometry material)
-        transform (js/Ammo.btTransform.)
         ghost-shape (js/Ammo.btCapsuleShape. 2 2)
         ghost-object (js/Ammo.btPairCachingGhostObject.)]
     (.set (.-position mesh) x y z)
-    (.setOrigin transform (js/Ammo.btVector3. x y z))
-    (.setWorldTransform ghost-object transform)
+    (.setWorldTransform ghost-object (ammo/transform x y z))
     (.setCollisionShape ghost-object ghost-shape)
     (.setCollisionFlags ghost-object 16)
     (let [controller (js/Ammo.btKinematicCharacterController.
@@ -55,9 +52,7 @@
       (.addCollisionObject world ghost-object 32 -1)
       (.addAction world controller)
       {:mesh mesh
-       :character {:transform transform
-                   :ghost-shape ghost-shape
-                   :ghost-object ghost-object
+       :character {:ghost-object ghost-object
                    :controller controller}})))
 
 (comment

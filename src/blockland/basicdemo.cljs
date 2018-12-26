@@ -1,5 +1,6 @@
 (ns blockland.basicdemo
-  (:require [three :as three]))
+  (:require [blockland.ammo :as ammo]
+            [three :as three]))
 
 (defn create-empty-world []
   (let [config (js/Ammo.btDefaultCollisionConfiguration.)
@@ -8,7 +9,7 @@
         solver (js/Ammo.btSequentialImpulseConstraintSolver.)
         world (js/Ammo.btDiscreteDynamicsWorld.
                dispatcher broadphase solver config)]
-    (.setGravity world (js/Ammo.btVector3. 0 -1 0))
+    (.setGravity world (js/Ammo.btVector3. 0 -10 0))
     world))
 
 (defn create-rigid-body [{:keys [mass transform shape color]
@@ -34,16 +35,12 @@
     mesh))
 
 (defn create-ground []
-  (let [ground-shape (create-box-shape 50 50 50)
-        ground-transform (js/Ammo.btTransform.)]
-    (.setIdentity ground-transform)
-    (.setOrigin ground-transform (js/Ammo.btVector3. 0 -56 0))
-    {:mesh (create-box-mesh 100 100 100
-                              0 -56 0)
-     :body (create-rigid-body {:mass 0
-                                 :transform ground-transform
-                                 :shape ground-shape
-                                 :color (js/Ammo.btVector4. 0 0 1 1)})}))
+  {:mesh (create-box-mesh 100 100 100
+                          0 -56 0)
+   :body (create-rigid-body {:mass 0
+                             :transform (ammo/transform 0 -56 0)
+                             :shape (create-box-shape 50 50 50)
+                             :color (js/Ammo.btVector4. 0 0 1 1)})})
 
 (defn create-blocks []
   (let [box-shape (create-box-shape 1 1 1)

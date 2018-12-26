@@ -41,8 +41,10 @@
 
 (comment
 
-  (let [{:keys [world]} @game-state]
-    (js/console.log (.y (.getGravity world))))
+  (let [{:keys [entities]} @game-state]
+    (doseq [{:keys [character]} entities]
+      (when-let [{:keys [controller]} character]
+        (.setGravity controller 0))))
 
   (reset-game!)
 
