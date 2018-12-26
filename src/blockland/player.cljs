@@ -28,6 +28,8 @@
   (let [walk-direction (js/Ammo.btVector3. 0 0 0)
         camera-direction (-> camera
                              (.getWorldDirection (three/Vector3.))
+                             (.setY 0)
+                             (.normalize)
                              (ammo/three-v3-to-bullet-v3))
         tmp (three/Vector3. 0 0 0)]
     (when (keys-pressed "w")
@@ -49,7 +51,11 @@
             (.multiplyScalar 1))))
     (.op_add walk-direction (ammo/three-v3-to-bullet-v3 tmp))
     (.op_mul walk-direction (* 10 delta-time))
-    (.setWalkDirection controller walk-direction))
+    (.setWalkDirection controller walk-direction)
+
+    (when (keys-pressed " ")
+      (.setJumpSpeed controller 15)
+      (.jump controller)))
 
   ;; match camera position to physics simulation
   (let [[x y z] (-> ghost-object

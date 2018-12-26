@@ -14,18 +14,21 @@
           dy (.-movementY e)]
       (reset! mouse-move {:delta-x dx :delta-y dy}))))
 
+(defn bind-events-to-canvas! [canvas]
+  (events/listen canvas
+                 EventType/MOUSEDOWN
+                 (fn [e]
+                   (.requestPointerLock canvas)
+                   (.preventDefault e)))
+
+  (events/listen canvas
+                 EventType/MOUSEMOVE
+                 (fn [e]
+                   (handle-mousemove e))))
+
 (defn setup-input-events! []
   (let [canvas (dom/getElementByTagNameAndClass "canvas")]
-    (events/listen canvas
-                   EventType/MOUSEDOWN
-                   (fn [e]
-                     (.requestPointerLock canvas)
-                     (.preventDefault e)))
-
-    (events/listen canvas
-                   EventType/MOUSEMOVE
-                   (fn [e]
-                     (handle-mousemove e))))
+    (bind-events-to-canvas! canvas))
 
   (events/listen js/document
                  EventType/KEYDOWN

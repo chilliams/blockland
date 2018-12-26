@@ -13,7 +13,7 @@
     (-> world
         (.getPairCache)
         (.setInternalGhostPairCallback ghost-pair-callback))
-    (.setGravity world (js/Ammo.btVector3. 0 -0.5 0))
+    (.setGravity world (js/Ammo.btVector3. 0 -1 0))
     world))
 
 (defn init-game []

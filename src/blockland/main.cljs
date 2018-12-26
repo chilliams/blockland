@@ -37,7 +37,8 @@
           ;; (basicdemo/init-game)
           )
   (let [{:keys [renderer]} @game-state]
-    (.appendChild (.-body js/document) (.-domElement renderer))))
+    (.appendChild (.-body js/document) (.-domElement renderer))
+    (gameloop/bind-events-to-canvas! (.-domElement renderer))))
 
 
 (comment
