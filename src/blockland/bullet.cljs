@@ -1,16 +1,11 @@
-(ns blockland.bullet)
-
-(defn xyz [v3]
-  [(.x v3) (.y v3) (.z v3)])
-
-(defn xyzw [quat]
-  [(.x quat) (.y quat) (.z quat) (.w quat)])
+(ns blockland.bullet
+  (:require [blockland.ammo :as ammo]))
 
 (defn apply-transform-to-mesh! [transform mesh]
   (let [[x y z] (-> transform
                     (.getOrigin)
-                    (xyz))
-        [qx qy qz qw] (xyzw (.getRotation transform))]
+                    (ammo/xyz))
+        [qx qy qz qw] (ammo/xyzw (.getRotation transform))]
     (.set (.-position mesh) x y z)
     (.set (.-quaternion mesh) qx qy qz qw)))
 

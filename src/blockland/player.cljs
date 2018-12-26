@@ -1,15 +1,13 @@
 (ns blockland.player
-  (:require [three :as three]))
-
-(defn xyz [v3]
-  [(.x v3) (.y v3) (.z v3)])
+  (:require [blockland.ammo :as ammo]
+            [three :as three]))
 
 (defn update-movement! [{:keys [ghost-object controller]}
                         camera
                         delta-time
                         {:keys [mouse keys-pressed]}]
 
-  ;; handle user input
+  ;; move camera
   (let [{:keys [delta-x delta-y]} mouse
         tmp (three/Vector3.)]
     (.rotateOnWorldAxis camera (.-up camera) (- (* 0.002 delta-x)))
@@ -19,12 +17,29 @@
         (.normalize))
     (.rotateOnWorldAxis camera tmp (- (* 0.002 delta-y))))
 
-  ;; match position of physics simulation
+  ;; make physics object face correct direction
+  (let [old-transform (.getWorldTransform ghost-object)
+        translation (.getOrigin old-transform)
+        tmp (.getWorldDirection camera (three/Vector3.))
+        quat (js/Ammo.btQuaternion. (.-x tmp) (.-y tmp) (.-z tmp) 0)
+        new-transform (js/Ammo.btTransform. quat translation)]
+    (.setWorldTransform ghost-object new-transform))
+
+  (let [walk-direction (js/Ammo.btVector3. 0 0 0)
+        camera-direction (-> camera
+                             (.getWorldDirection (three/Vector3.))
+                             (ammo/three-v3-to-bullet-v3))]
+    (when (keys-pressed "w")
+      (.op_add walk-direction camera-direction))
+    (.op_mul walk-direction (* 10 delta-time))
+    (.setWalkDirection controller walk-direction))
+
+  ;; match camera position to physics simulation
   (let [[x y z] (-> ghost-object
                     (.getWorldTransform)
                     (.getOrigin)
-                    (xyz))]
-    (.set (.-position camera) x (+ y 1) z)))
+                    (ammo/xyz))]
+    (.set (.-position camera) x y z)))
 
 (defn player-system! [{:keys [camera entities]} delta-time input]
   (doseq [{:keys [character player]} entities]
