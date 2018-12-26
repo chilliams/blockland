@@ -13,15 +13,19 @@
     (js/Ammo.btBoxShape.
      (js/Ammo.btVector3. (/ width 2) (/ height 2) (/ depth 2)))))
 
+(defn create-body [col-shape x y z]
+  (let [body-info (js/Ammo.btRigidBodyConstructionInfo.
+                   0 nil col-shape (js/Ammo.btVector3.))
+        body (js/Ammo.btRigidBody. body-info)
+        motion-state (js/Ammo.btDefaultMotionState. (ammo/transform x y z))]
+    (.setMotionState body motion-state)
+    body))
+
 (defn create-static-entity [geometry x y z]
   (let [material (three/MeshNormalMaterial.)
         mesh (three/Mesh. geometry material)
         col (create-box-shape geometry)
-        body-info (js/Ammo.btRigidBodyConstructionInfo.
-                   0 nil col (js/Ammo.btVector3.))
-        body (js/Ammo.btRigidBody. body-info)
-        motion-state (js/Ammo.btDefaultMotionState. (ammo/transform x y z))]
-    (.setMotionState body motion-state)
+        body (create-body col x y z)]
     (.set (.-position mesh) x y z)
     {:mesh mesh
      :body body}))
@@ -55,7 +59,33 @@
        :character {:ghost-object ghost-object
                    :controller controller}})))
 
+(defn create-mesh-shape []
+  (let [quad [(js/Ammo.btVector3. 0 1 -1)
+              (js/Ammo.btVector3. 0 1 1)
+              (js/Ammo.btVector3. 0 -1 1)
+              (js/Ammo.btVector3. 0 -1 -1)]
+        mesh (js/Ammo.btTriangleMesh.)
+        use-quantized-aabb-compression true]
+    (.addTriangle mesh (quad 0) (quad 1) (quad 2) true)
+    (.addTriangle mesh (quad 0) (quad 2) (quad 3) true)
+    (js/Ammo.btBvhTriangleMeshShape. mesh use-quantized-aabb-compression)))
+
+(defn create-mesh [x y z]
+  (let [shape (create-mesh-shape)
+        body (create-body shape x y z)
+
+        ;; TODO: use correct mesh
+        geometry (three/CylinderGeometry. 2 2 6)
+        material (three/MeshNormalMaterial.)
+        mesh (three/Mesh. geometry material)]
+    (.set (.-position mesh) x y z)
+
+    {:mesh mesh
+     :body body}))
+
 (comment
+
+  (create-mesh 0 0 0)
 
   (let [geometry (three/BoxGeometry. 1 20 40)
         material (three/MeshNormalMaterial.)
