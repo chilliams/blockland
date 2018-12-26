@@ -24,11 +24,11 @@
                   (entities/create-character world 5 10 5)]]
     (.set (.-position camera) 30 40 30)
     (.lookAt camera 0 0 0)
-    (doseq [{:keys [model bullet]} entities]
-      (when bullet
-        (.addRigidBody world bullet))
-      (when model
-        (.add scene model)))
+    (doseq [{:keys [mesh body]} entities]
+      (when body
+        (.addRigidBody world body))
+      (when mesh
+        (.add scene mesh)))
     (.setSize renderer js/window.innerWidth js/window.innerHeight)
     {:camera camera
      :scene scene
@@ -43,8 +43,8 @@
 
 (defn start-game! []
   (reset! game-state
-          ;; (create-game-state)
-          (basicdemo/init-game)
+          (create-game-state)
+          ;; (basicdemo/init-game)
           )
   (let [{:keys [renderer]} @game-state]
     (.appendChild (.-body js/document) (.-domElement renderer))
@@ -58,13 +58,13 @@
   (let [{:keys [renderer]} @game-state]
     (.remove (.-domElement renderer)))
   (reset! game-state
-          ;; (create-game-state)
-          (basicdemo/init-game)
+          (create-game-state)
+          ;; (basicdemo/init-game)
           )
   (let [{:keys [renderer]} @game-state]
     (.appendChild (.-body js/document) (.-domElement renderer))))
 
-(defn bullet-xyz [v3]
+(defn body-xyz [v3]
   [(.x v3) (.y v3) (.z v3)])
 
 (comment
@@ -72,20 +72,20 @@
   (reset-game!)
 
   (let [{:keys [world entities camera]} @game-state
-        {:keys [model bullet]} (second entities)
-        model-pos (.-position model)
+        {:keys [mesh body]} (second entities)
+        mesh-pos (.-position mesh)
         transform (js/Ammo.btTransform.)
-        _ (-> bullet
+        _ (-> body
               (.getMotionState)
               (.getWorldTransform transform))
-        bullet-pos (-> transform
+        body-pos (-> transform
                        (.getOrigin)
-                       (bullet-xyz))]
+                       (body-xyz))]
     (.set (.-position camera) 10 10 15)
     (.lookAt camera 0 0 0)
-    (js/console.log model-pos)
-    (print bullet-pos)
-    (js/console.log bullet)
+    (js/console.log mesh-pos)
+    (print body-pos)
+    (js/console.log body)
     (js/console.log world))
 
 

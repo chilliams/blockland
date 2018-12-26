@@ -26,7 +26,7 @@
 (defn create-box-shape [x y z]
   (js/Ammo.btBoxShape. (js/Ammo.btVector3. x y z)))
 
-(defn create-box-model [w h d x y z]
+(defn create-box-mesh [w h d x y z]
   (let [geometry (three/BoxGeometry. w h d)
         material (three/MeshNormalMaterial.)
         mesh (three/Mesh. geometry material)]
@@ -38,9 +38,9 @@
         ground-transform (js/Ammo.btTransform.)]
     (.setIdentity ground-transform)
     (.setOrigin ground-transform (js/Ammo.btVector3. 0 -56 0))
-    {:model (create-box-model 100 100 100
+    {:mesh (create-box-mesh 100 100 100
                               0 -56 0)
-     :bullet (create-rigid-body {:mass 0
+     :body (create-rigid-body {:mass 0
                                  :transform ground-transform
                                  :shape ground-shape
                                  :color (js/Ammo.btVector4. 0 0 1 1)})}))
@@ -59,9 +59,9 @@
             y (* 10 k)
             z (* 2 j)]
         (.setOrigin start-transform (js/Ammo.btVector3. x y z))
-        {:model (create-box-model 2 2 2
+        {:mesh (create-box-mesh 2 2 2
                                   x y z)
-         :bullet (create-rigid-body {:mass mass
+         :body (create-rigid-body {:mass mass
                                      :transform start-transform
                                      :shape box-shape})}))))
 
@@ -78,11 +78,11 @@
     (.set (.-position camera) 10 10 15)
     (.lookAt camera 0 0 0)
     (.setSize renderer js/window.innerWidth js/window.innerHeight)
-    (doseq [{:keys [model bullet]} entities]
-      (when bullet
-        (.addRigidBody world bullet))
-      (when model
-        (.add scene model)))
+    (doseq [{:keys [mesh body]} entities]
+      (when body
+        (.addRigidBody world body))
+      (when mesh
+        (.add scene mesh)))
     {:camera camera
      :scene scene
      :renderer renderer

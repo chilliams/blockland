@@ -24,8 +24,8 @@
     (.setOrigin transform (js/Ammo.btVector3. x y z))
     (.setMotionState body (js/Ammo.btDefaultMotionState. transform))
     (.set (.-position mesh) x y z)
-    {:model mesh
-     :bullet body}))
+    {:mesh mesh
+     :body body}))
 
 (defn create-ground [x y z]
   (create-static-entity (three/BoxGeometry. 40 1 40) x y z))
@@ -54,7 +54,7 @@
                     0.35)]
     (.addCollisionObject world ghost-object 32 -1)
     (.addAction world controller)
-    {:model mesh
+    {:mesh mesh
      :character {:transform transform
                  :ghost-shape ghost-shape
                  :ghost-object ghost-object
