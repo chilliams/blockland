@@ -1,6 +1,7 @@
 (ns blockland.main
   (:require [blockland.basicdemo :as basicdemo]
             [blockland.bullet :as bullet]
+            [blockland.client :as client]
             [blockland.entities :as entities]
             [blockland.firstperson :as firstperson]
             [blockland.gameloop :as gameloop]

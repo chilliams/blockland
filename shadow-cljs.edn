@@ -8,7 +8,12 @@
  :builds
  {:game
   {:target :browser
-   :modules {:main {:init-fn blockland.main/init}}
+   :modules {:main {:entries []}
+             :game {:init-fn blockland.main/init
+                    :depends-on #{:main}}
+             :worker {:entries [blockland.worker]
+                      :depends-on #{:main}
+                      :web-worker true}}
    :devtools
    {:http-root "public"
     :http-port 8080}}}}
