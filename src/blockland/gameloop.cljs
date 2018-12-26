@@ -1,30 +1,58 @@
 (ns blockland.gameloop
-  (:require [goog.events :as events]
+  (:require [goog.dom :as dom]
+            [goog.events :as events]
             [goog.events.EventType :as EventType]
             [three :as three]))
 
 (defonce keys-pressed (atom #{}))
+(defonce mouse-move (atom {}))
 
-(defonce key-events
-  (do
-    (events/listen js/document
-                   EventType/KEYDOWN
-                   (fn [e]
-                     ;; (.preventDefault e)
-                     (let [key (.-key e)]
-                       (swap! keys-pressed #(conj % key)))))
+(defn handle-mousemove [e]
+  (when js/document.pointerLockElement
+    (let [e (.getBrowserEvent e)
+          dx (.-movementX e)
+          dy (.-movementY e)]
+      (reset! mouse-move {:delta-x dx :delta-y dy}))))
 
-    (events/listen js/document
-                   EventType/KEYUP
+(defn setup-input-events! []
+  (let [canvas (dom/getElementByTagNameAndClass "canvas")]
+    (events/listen canvas
+                   EventType/MOUSEDOWN
                    (fn [e]
-                     ;; (.preventDefault e)
-                     (let [key (.-key e)]
-                       (swap! keys-pressed #(disj % key)))))))
+                     (.requestPointerLock canvas)
+                     (.preventDefault e)))
+
+    (events/listen canvas
+                   EventType/MOUSEMOVE
+                   (fn [e]
+                     (handle-mousemove e))))
+
+  (events/listen js/document
+                 EventType/KEYDOWN
+                 (fn [e]
+                   ;; (.preventDefault e)
+                   (let [key (.-key e)]
+                     (swap! keys-pressed #(conj % key)))))
+
+  (events/listen js/document
+                 EventType/KEYUP
+                 (fn [e]
+                   ;; (.preventDefault e)
+                   (let [key (.-key e)]
+                     (swap! keys-pressed #(disj % key))))))
 
 (defn run-game! [loop-fn]
   (let [clock (three/Clock.)]
     (letfn [(animate! []
               (js/requestAnimationFrame animate!)
               (loop-fn {:delta-time (.getDelta clock)
-                        :keys-pressed @keys-pressed}))]
+                        :input {:keys-pressed @keys-pressed
+                                :mouse @mouse-move}})
+              (reset! mouse-move {:delta-x 0 :delta-y 0}))]
       (js/requestAnimationFrame animate!))))
+
+(comment
+
+  @mouse-move
+
+  )

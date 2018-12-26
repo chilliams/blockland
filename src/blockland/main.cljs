@@ -9,11 +9,11 @@
 
 (defonce game-state (atom {}))
 
-(defn game-loop! [{:keys [delta-time keys-pressed]}]
+(defn game-loop! [{:keys [delta-time input]}]
   (let [{:keys [camera scene renderer] :as game} @game-state]
     (.render renderer scene camera)
     (bullet/bullet-system! game delta-time)
-    (player/player-system! game delta-time keys-pressed)))
+    (player/player-system! game delta-time input)))
 
 (defn start-game! []
   (reset! game-state
@@ -22,6 +22,7 @@
           )
   (let [{:keys [renderer]} @game-state]
     (.appendChild (.-body js/document) (.-domElement renderer))
+    (gameloop/setup-input-events!)
     (gameloop/run-game! (fn [data] (game-loop! data)))))
 
 (defn init []
