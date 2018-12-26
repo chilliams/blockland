@@ -1,22 +1,5 @@
 (ns blockland.bullet)
 
-(defn create-bullet-world []
-  (let [config (js/Ammo.btDefaultCollisionConfiguration.)
-        dispatcher (js/Ammo.btCollisionDispatcher. config)
-        broadphase (js/Ammo.btDbvtBroadphase.)
-        ;; broadphase (js/Ammo.btAxisSweep3.
-        ;;             (js/Ammo.btVector3. -1000 -1000 -1000)
-        ;;             (js/Ammo.btVector3. 1000 1000 1000))
-        solver (js/Ammo.btSequentialImpulseConstraintSolver.)
-        world (js/Ammo.btDiscreteDynamicsWorld.
-               dispatcher broadphase solver config)
-        ghost-pair-callback (js/Ammo.btGhostPairCallback.)]
-    (-> world
-        (.getPairCache)
-        (.setInternalGhostPairCallback ghost-pair-callback))
-    (.setGravity world (js/Ammo.btVector3. 0 -0.5 0))
-    world))
-
 (defn body-xyz [v3]
   [(.x v3) (.y v3) (.z v3)])
 
