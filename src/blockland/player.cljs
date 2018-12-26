@@ -28,9 +28,26 @@
   (let [walk-direction (js/Ammo.btVector3. 0 0 0)
         camera-direction (-> camera
                              (.getWorldDirection (three/Vector3.))
-                             (ammo/three-v3-to-bullet-v3))]
+                             (ammo/three-v3-to-bullet-v3))
+        tmp (three/Vector3. 0 0 0)]
     (when (keys-pressed "w")
       (.op_add walk-direction camera-direction))
+    (when (keys-pressed "s")
+      (.op_sub walk-direction camera-direction))
+    (when-not (and (keys-pressed "a") (keys-pressed "d"))
+      (when (keys-pressed "a")
+        (.getWorldDirection camera tmp)
+        (-> tmp
+            (.cross (.-up camera))
+            (.normalize)
+            (.multiplyScalar -1)))
+      (when (keys-pressed "d")
+        (.getWorldDirection camera tmp)
+        (-> tmp
+            (.cross (.-up camera))
+            (.normalize)
+            (.multiplyScalar 1))))
+    (.op_add walk-direction (ammo/three-v3-to-bullet-v3 tmp))
     (.op_mul walk-direction (* 10 delta-time))
     (.setWalkDirection controller walk-direction))
 
