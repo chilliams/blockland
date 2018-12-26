@@ -4,6 +4,7 @@
             [blockland.entities :as entities]
             [blockland.firstperson :as firstperson]
             [blockland.gameloop :as gameloop]
+            [blockland.player :as player]
             [three :as three]))
 
 (defonce game-state (atom {}))
@@ -11,7 +12,8 @@
 (defn game-loop! [{:keys [delta-time keys-pressed]}]
   (let [{:keys [camera scene renderer] :as game} @game-state]
     (.render renderer scene camera)
-    (bullet/bullet-system! game delta-time)))
+    (bullet/bullet-system! game delta-time)
+    (player/player-system! game delta-time keys-pressed)))
 
 (defn start-game! []
   (reset! game-state
@@ -38,6 +40,9 @@
 
 
 (comment
+
+  (let [{:keys [world]} @game-state]
+    (js/console.log (.y (.getGravity world))))
 
   (reset-game!)
 

@@ -1,16 +1,16 @@
 (ns blockland.bullet)
 
-(defn body-xyz [v3]
+(defn xyz [v3]
   [(.x v3) (.y v3) (.z v3)])
 
-(defn body-xyzw [quat]
+(defn xyzw [quat]
   [(.x quat) (.y quat) (.z quat) (.w quat)])
 
 (defn apply-transform-to-mesh! [transform mesh]
   (let [[x y z] (-> transform
                     (.getOrigin)
-                    (body-xyz))
-        [qx qy qz qw] (body-xyzw (.getRotation transform))]
+                    (xyz))
+        [qx qy qz qw] (xyzw (.getRotation transform))]
     (.set (.-position mesh) x y z)
     (.set (.-quaternion mesh) qx qy qz qw)))
 

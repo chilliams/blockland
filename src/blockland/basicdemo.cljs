@@ -8,7 +8,7 @@
         solver (js/Ammo.btSequentialImpulseConstraintSolver.)
         world (js/Ammo.btDiscreteDynamicsWorld.
                dispatcher broadphase solver config)]
-    (.setGravity world (js/Ammo.btVector3. 0 -10 0))
+    (.setGravity world (js/Ammo.btVector3. 0 -1 0))
     world))
 
 (defn create-rigid-body [{:keys [mass transform shape color]

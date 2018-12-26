@@ -1,6 +1,7 @@
 (ns blockland.gameloop
   (:require [goog.events :as events]
-            [goog.events.EventType :as EventType]))
+            [goog.events.EventType :as EventType]
+            [three :as three]))
 
 (defonce keys-pressed (atom #{}))
 
@@ -21,11 +22,9 @@
                        (swap! keys-pressed #(disj % key)))))))
 
 (defn run-game! [loop-fn]
-  (let [prev-time (atom 0)]
-    (letfn [(animate! [time]
-               (let [delta-time (- time @prev-time)]
-                 (reset! prev-time time)
-                 (js/requestAnimationFrame animate!)
-                 (loop-fn {:delta-time delta-time
-                           :keys-pressed @keys-pressed})))]
+  (let [clock (three/Clock.)]
+    (letfn [(animate! []
+              (js/requestAnimationFrame animate!)
+              (loop-fn {:delta-time (.getDelta clock)
+                        :keys-pressed @keys-pressed}))]
       (js/requestAnimationFrame animate!))))

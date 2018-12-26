@@ -10,7 +10,7 @@
         height (- (.-y mx) (.-y mn))
         depth (- (.-z mx) (.-z mn))]
     (js/Ammo.btBoxShape.
-     (js/Ammo.btVector3. (/ width 2) (/ height 2) (/ depth 2)))))
+     (js/Ammo.btVector3. width height depth))))
 
 (defn create-static-entity [geometry x y z]
   (let [material (three/MeshNormalMaterial.)
@@ -40,25 +40,25 @@
   (let [geometry (three/CylinderGeometry. 2 2 6)
         material (three/MeshNormalMaterial.)
         mesh (three/Mesh. geometry material)
-        _ (.set (.-position mesh) x y z)
         transform (js/Ammo.btTransform.)
-        _ (.setOrigin transform (js/Ammo.btVector3. x y z))
-        ghost-object (js/Ammo.btPairCachingGhostObject.)
-        _ (.setWorldTransform ghost-object transform)
         ghost-shape (js/Ammo.btCapsuleShape. 2 2)
-        _ (.setCollisionShape ghost-object ghost-shape)
-        _ (.setCollisionFlags ghost-object 16)
-        controller (js/Ammo.btKinematicCharacterController.
-                    ghost-object
-                    ghost-shape
-                    0.35)]
-    (.addCollisionObject world ghost-object 32 -1)
-    (.addAction world controller)
-    {:mesh mesh
-     :character {:transform transform
-                 :ghost-shape ghost-shape
-                 :ghost-object ghost-object
-                 :controller controller}}))
+        ghost-object (js/Ammo.btPairCachingGhostObject.)]
+    (.set (.-position mesh) x y z)
+    (.setOrigin transform (js/Ammo.btVector3. x y z))
+    (.setWorldTransform ghost-object transform)
+    (.setCollisionShape ghost-object ghost-shape)
+    (.setCollisionFlags ghost-object 16)
+    (let [controller (js/Ammo.btKinematicCharacterController.
+                      ghost-object
+                      ghost-shape
+                      0.35)]
+      (.addCollisionObject world ghost-object 32 -1)
+      (.addAction world controller)
+      {:mesh mesh
+       :character {:transform transform
+                   :ghost-shape ghost-shape
+                   :ghost-object ghost-object
+                   :controller controller}})))
 
 (comment
 
@@ -69,5 +69,7 @@
     (js/JSON.stringify (.-position mesh)))
 
   (js/console.log ammo)
+
+  (js/console.log undefined)
 
   )
