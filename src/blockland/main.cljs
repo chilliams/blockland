@@ -16,19 +16,17 @@
         scene (three/Scene.)
         renderer (three/WebGLRenderer. #js {:antialias true})
         world (bullet/create-bullet-world)
-        entities [;; (entities/create-ground 0 0 0)
+        entities [(entities/create-ground 0 0 0)
                   (entities/create-wall-horizontal 0 10 -20)
                   (entities/create-wall-horizontal 0 10 20)
                   (entities/create-wall-vertical 20 10 0)
                   (entities/create-wall-vertical -20 10 0)
                   (entities/create-character world 5 10 5)]]
-    (set! (-> camera (.-position) (.-x)) 30)
-    (set! (-> camera (.-position) (.-y)) 40)
-    (set! (-> camera (.-position) (.-z)) 30)
+    (.set (.-position camera) 30 40 30)
     (.lookAt camera 0 0 0)
     (doseq [{:keys [model bullet]} entities]
       (when bullet
-        (.addRigidBody world (:body bullet)))
+        (.addRigidBody world bullet))
       (when model
         (.add scene model)))
     (.setSize renderer js/window.innerWidth js/window.innerHeight)
@@ -39,13 +37,15 @@
      :renderer renderer}))
 
 (defn game-loop! [{:keys [delta-time keys-pressed]}]
-  (let [{:keys [camera scene renderer world entities] :as game} @game-state]
+  (let [{:keys [camera scene renderer] :as game} @game-state]
     (.render renderer scene camera)
-    (bullet/bullet-system! world delta-time)
-    (basicdemo/sync-physics-to-graphics game)))
+    (bullet/bullet-system! game delta-time)))
 
 (defn start-game! []
-  (reset! game-state (basicdemo/init-game))
+  (reset! game-state
+          ;; (create-game-state)
+          (basicdemo/init-game)
+          )
   (let [{:keys [renderer]} @game-state]
     (.appendChild (.-body js/document) (.-domElement renderer))
     (gameloop/run-game! (fn [data] (game-loop! data)))))
@@ -57,7 +57,10 @@
 (defn reset-game! []
   (let [{:keys [renderer]} @game-state]
     (.remove (.-domElement renderer)))
-  (reset! game-state (basicdemo/init-game))
+  (reset! game-state
+          ;; (create-game-state)
+          (basicdemo/init-game)
+          )
   (let [{:keys [renderer]} @game-state]
     (.appendChild (.-body js/document) (.-domElement renderer))))
 
@@ -78,8 +81,8 @@
         bullet-pos (-> transform
                        (.getOrigin)
                        (bullet-xyz))]
-    (.set (.-position camera) 10 55 15)
-    (.lookAt camera 0 55 0)
+    (.set (.-position camera) 10 10 15)
+    (.lookAt camera 0 0 0)
     (js/console.log model-pos)
     (print bullet-pos)
     (js/console.log bullet)

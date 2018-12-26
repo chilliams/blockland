@@ -1,7 +1,7 @@
 (ns blockland.entities
   (:require [three :as three]))
 
-(defn calculate-box-shape [geometry]
+(defn create-box-shape [geometry]
   (.computeBoundingBox geometry)
   (let [box (.-boundingBox geometry)
         mx (.-max box)
@@ -15,14 +15,17 @@
 (defn create-static-entity [geometry x y z]
   (let [material (three/MeshNormalMaterial.)
         mesh (three/Mesh. geometry material)
-        col (calculate-box-shape geometry)
+        col (create-box-shape geometry)
         body-info (js/Ammo.btRigidBodyConstructionInfo.
                    0 nil col (js/Ammo.btVector3.))
-        body (js/Ammo.btRigidBody. body-info)]
+        body (js/Ammo.btRigidBody. body-info)
+        transform (js/Ammo.btTransform.)]
+    (.setIdentity transform)
+    (.setOrigin transform (js/Ammo.btVector3. x y z))
+    (.setMotionState body (js/Ammo.btDefaultMotionState. transform))
     (.set (.-position mesh) x y z)
     {:model mesh
-     :bullet {:body-info body-info
-              :body body}}))
+     :bullet body}))
 
 (defn create-ground [x y z]
   (create-static-entity (three/BoxGeometry. 40 1 40) x y z))
@@ -39,7 +42,7 @@
         mesh (three/Mesh. geometry material)
         _ (.set (.-position mesh) x y z)
         transform (js/Ammo.btTransform.)
-        _ (.setOrigin transform (js/Ammo.btVector3 x y z))
+        _ (.setOrigin transform (js/Ammo.btVector3. x y z))
         ghost-object (js/Ammo.btPairCachingGhostObject.)
         _ (.setWorldTransform ghost-object transform)
         ghost-shape (js/Ammo.btCapsuleShape. 2 2)

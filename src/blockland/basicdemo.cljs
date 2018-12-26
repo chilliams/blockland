@@ -1,12 +1,6 @@
 (ns blockland.basicdemo
   (:require [three :as three]))
 
-(defn bullet-xyz [v3]
-  [(.x v3) (.y v3) (.z v3)])
-
-(defn bullet-xyzw [quat]
-  [(.x quat) (.y quat) (.z quat) (.w quat)])
-
 (defn create-empty-world []
   (let [config (js/Ammo.btDefaultCollisionConfiguration.)
         dispatcher (js/Ammo.btCollisionDispatcher. config)
@@ -43,7 +37,7 @@
   (let [ground-shape (create-box-shape 50 50 50)
         ground-transform (js/Ammo.btTransform.)]
     (.setIdentity ground-transform)
-    (.setOrigin ground-transform 0 -56 0)
+    (.setOrigin ground-transform (js/Ammo.btVector3. 0 -56 0))
     {:model (create-box-model 100 100 100
                               0 -56 0)
      :bullet (create-rigid-body {:mass 0
@@ -62,7 +56,7 @@
           i (range 5)
           j (range 5)]
       (let [x (* 2 i)
-            y (* 100 k)
+            y (* 10 k)
             z (* 2 j)]
         (.setOrigin start-transform (js/Ammo.btVector3. x y z))
         {:model (create-box-model 2 2 2
@@ -81,8 +75,8 @@
         renderer (three/WebGLRenderer. #js {:antialias true})
         world (create-empty-world)
         entities (conj (create-blocks) (create-ground))]
-    (.set (.-position camera) 10 55 15)
-    (.lookAt camera 0 55 0)
+    (.set (.-position camera) 10 10 15)
+    (.lookAt camera 0 0 0)
     (.setSize renderer js/window.innerWidth js/window.innerHeight)
     (doseq [{:keys [model bullet]} entities]
       (when bullet
@@ -95,24 +89,8 @@
      :world world
      :entities entities}))
 
-(defn sync-physics-to-graphics [{:keys [entities]}]
-  (let [transform (js/Ammo.btTransform.)]
-    (doseq [{:keys [model bullet]} entities]
-      (-> bullet
-          (.getMotionState)
-          (.getWorldTransform transform))
-      (let [[x y z] (-> transform
-                        (.getOrigin)
-                        (bullet-xyz))
-            [qx qy qz qw] (bullet-xyzw (.getRotation transform))]
-        (.set (.-position model) x y z)
-        (.set (.-quaternion model) qx qy qz qw)))))
-
-(defn render [world])
-
 (comment
 
-  (-> (init-game)
-      (sync-physics-to-graphics))
+  (init-game)
 
   )
