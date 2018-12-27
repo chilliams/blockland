@@ -83,7 +83,7 @@
   (swap!
    game-state
    (fn [game]
-     (add-entity-to-game! game (entities/create-mesh 0 0 0))))
+     (add-entity-to-game! game (entities/create-mesh 0 40 0))))
 
   (.postMessage worker "hello world")
 

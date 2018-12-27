@@ -48,17 +48,17 @@ std::vector<int> getFace(Vec3 p, Side side) {
 std::vector<std::vector<int>> blockNormal = {
     {1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
 
-std::vector<float> grassTop = {0.124, 0.124, 0.01,  0.124,
-                               0.01,  0.01,  0.124, 0.01};
+std::vector<float> grassTop = {0.124, 1-0.124, 0.01,  1-0.124,
+                               0.01,  1-0.01,  0.124, 1-0.01};
 
-std::vector<float> grassSide = {0.499, 0.124, 0.376, 0.124,
-                                0.376, 0.01,  0.499, 0.01};
+std::vector<float> grassSide = {0.499, 1-0.124, 0.376, 1-0.124,
+                                0.376, 1-0.01,  0.499, 1-0.01};
 
-std::vector<float> dirtSide = {0.374, 0.124, 0.251, 0.124,
-                               0.251, 0.01,  0.374, 0.01};
+std::vector<float> dirtSide = {0.374, 1-0.124, 0.251, 1-0.124,
+                               0.251, 1-0.01,  0.374, 1-0.01};
 
-std::vector<float> stoneSide = {0.249, 0.124, 0.126, 0.124,
-                                0.126, 0.01,  0.249, 0.01};
+std::vector<float> stoneSide = {0.249, 1-0.124, 0.126, 1-0.124,
+                                0.126, 1-0.01,  0.249, 1-0.01};
 
 std::vector<std::vector<float>> grassTex = {grassSide, grassSide, grassTop,
                                             dirtSide,  grassSide, grassSide};
