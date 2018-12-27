@@ -62,9 +62,10 @@
                     (.getWorldTransform)
                     (.getOrigin)
                     (ammo/xyz))]
-    (.set (.-position camera) x y z)))
+    (.set (.-position camera) x (+ y 40) z)))
 
 (defn player-system! [{:keys [camera entities]} delta-time input]
   (doseq [{:keys [character player]} entities]
     (when player
-      (update-movement! character camera delta-time input))))
+      (update-movement! character camera delta-time input)
+      )))

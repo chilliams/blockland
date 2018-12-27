@@ -31,10 +31,11 @@
                   (entities/create-wall-vertical 20 10 0)
                   (entities/create-wall-vertical -20 10 0)
                   (entities/create-mesh 1 1 1)
+                  (entities/three-mesh 1 5 1)
                   (assoc (entities/create-character world 0 15 0)
                          :player true)]]
-    ;; (.set (.-position camera) 30 40 30)
-    ;; (.lookAt camera 0 0 0)
+    (.set (.-position camera) 30 40 30)
+    (.lookAt camera 0 25 0)
     (doseq [{:keys [mesh body]} entities]
       (when body
         (.addRigidBody world body))

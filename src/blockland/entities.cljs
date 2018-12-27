@@ -83,6 +83,34 @@
     {:mesh mesh
      :body body}))
 
+(defn three-mesh [x y z]
+  (let [geometry (three/BufferGeometry.)
+        vertices (js/Float32Array. #js [-1.0, -1.0,  1.0,
+	                                      1.0, -1.0,  1.0,
+	                                      1.0,  1.0,  1.0,
+
+	                                      1.0,  1.0,  1.0,
+	                                      -1.0,  1.0,  1.0,
+	                                      -1.0, -1.0,  1.0])]
+    (.addAttribute geometry "position" (three/BufferAttribute. vertices 3))
+    (let [material (three/MeshBasicMaterial. #js {"color" 0xff000})
+          mesh (three/Mesh. geometry material)]
+      (.set (.-position mesh) x y z)
+      {:mesh mesh})))
+
+(defn create-chunk [data]
+  (let [indices (.-indices data)
+        normal (.-normal data)
+        position (.-position data)
+        uv (.-uv data)
+        geometry (three/BufferGeometry.)]
+    (.setIndex geometry (three/BufferAttribute. indices 1))
+    (.addAttribute geometry "position" (three/BufferAttribute. position 3))
+    (let [material (three/MeshBasicMaterial. #js {"color" 0xff000})
+          mesh (three/Mesh. geometry material)]
+      ;; (.set (.-position mesh) 1 7 1)
+      {:mesh mesh})))
+
 (comment
 
   (create-mesh 0 0 0)

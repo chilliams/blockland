@@ -1,9 +1,7 @@
 (ns blockland.client)
 
-(defonce worker
+(defn start-worker [callback]
   (let [worker (js/Worker. "/js/worker.js")]
     (js/console.log worker)
-    (set! (.-onmessage worker) (fn [e] (js/console.log e)))
+    (set! (.-onmessage worker) callback)
     worker))
-
-(.postMessage worker "hello world")
