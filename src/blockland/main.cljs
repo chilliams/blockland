@@ -36,11 +36,15 @@
   (update game :entities conj entity))
 
 (defn add-chunk! [data]
-  (let [chunk (entities/create-chunk data)]
-    (swap!
-     game-state
-     (fn [game]
-       (add-entity-to-game! game chunk)))))
+  (let [texture-loader (three/TextureLoader.)]
+    (.load
+     texture-loader
+     "/texture.png"
+     (fn [texture]
+       (swap!
+        game-state
+        (fn [game]
+          (add-entity-to-game! game (entities/create-chunk data texture))))))))
 
 (defn handle-worker-message! [e]
   (let [command (.-command (.-data e))

@@ -98,15 +98,17 @@
       (.set (.-position mesh) x y z)
       {:mesh mesh})))
 
-(defn create-chunk [data]
+(defn create-chunk [data texture]
   (let [indices (.-indices data)
         normal (.-normal data)
         position (.-position data)
         uv (.-uv data)
         geometry (three/BufferGeometry.)]
     (.setIndex geometry (three/BufferAttribute. indices 1))
+    (.addAttribute geometry "normal" (three/BufferAttribute. normal 3))
     (.addAttribute geometry "position" (three/BufferAttribute. position 3))
-    (let [material (three/MeshBasicMaterial. #js {"color" 0xff000})
+    (.addAttribute geometry "uv" (three/BufferAttribute. uv 2))
+    (let [material (three/MeshBasicMaterial. #js {"map" texture})
           mesh (three/Mesh. geometry material)]
       ;; (.set (.-position mesh) 1 7 1)
       {:mesh mesh})))

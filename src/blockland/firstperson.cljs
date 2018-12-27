@@ -30,8 +30,6 @@
                   (entities/create-wall-horizontal 0 10 20)
                   (entities/create-wall-vertical 20 10 0)
                   (entities/create-wall-vertical -20 10 0)
-                  (entities/create-mesh 1 1 1)
-                  (entities/three-mesh 1 5 1)
                   (assoc (entities/create-character world 0 15 0)
                          :player true)]]
     (.set (.-position camera) 30 40 30)

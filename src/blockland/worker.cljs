@@ -8,12 +8,11 @@
 
 (defn handle-message [e]
   (let [size 3]
-    (doseq [[x y z] (sort-by (fn [p] (reduce + (map #(* % %) p)))
-                             (for [x (range (- size) size)
-                                   z (range (- size) size)
-                                   y (range 2)]
-                               [x y z]))]
-      (let [result (js/Module.make_chunk #js [x y z])]
+    (doseq [[x z] (sort-by (fn [p] (reduce + (map #(* % %) p)))
+                           (for [x (range (- size) size)
+                                 z (range (- size) size)]
+                             [x z]))]
+      (let [result (js/Module.make_chunk #js [x 0 z])]
         (.postMessage js/self
                       #js {:command "mesh"
                            :data result})))))
