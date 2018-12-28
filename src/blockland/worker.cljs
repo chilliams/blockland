@@ -7,7 +7,7 @@
 (js/importScripts "/js/chunkworker.js")
 
 (defn handle-message [e]
-  (let [size 3]
+  (let [size 5]
     (doseq [[x z] (sort-by (fn [p] (reduce + (map #(* % %) p)))
                            (for [x (range (- size) size)
                                  z (range (- size) size)]
@@ -20,4 +20,4 @@
 (defn add-event-listener []
   (js/self.addEventListener "message" handle-message))
 
-(object/set js/Module "onRuntimeInitialized" add-event-listener)
+(object/set js/Module "onRuntimeInitialized" handle-message)

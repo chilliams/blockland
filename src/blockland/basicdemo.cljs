@@ -1,6 +1,5 @@
 (ns blockland.basicdemo
-  (:require [blockland.ammo :as ammo]
-            [three :as three]))
+  (:require [blockland.ammo :as ammo]))
 
 (defn create-empty-world []
   (let [config (js/Ammo.btDefaultCollisionConfiguration.)
@@ -28,9 +27,9 @@
   (js/Ammo.btBoxShape. (js/Ammo.btVector3. x y z)))
 
 (defn create-box-mesh [w h d x y z]
-  (let [geometry (three/BoxGeometry. w h d)
-        material (three/MeshNormalMaterial.)
-        mesh (three/Mesh. geometry material)]
+  (let [geometry (js/THREE.BoxGeometry. w h d)
+        material (js/THREE.MeshNormalMaterial.)
+        mesh (js/THREE.Mesh. geometry material)]
     (.set (.-position mesh) x y z)
     mesh))
 
@@ -63,13 +62,13 @@
                                      :shape box-shape})}))))
 
 (defn init-game []
-  (let [camera (three/PerspectiveCamera.
+  (let [camera (js/THREE.PerspectiveCamera.
                 90
                 (/ js/window.innerWidth js/window.innerHeight)
                 1
                 3000)
-        scene (three/Scene.)
-        renderer (three/WebGLRenderer. #js {:antialias true})
+        scene (js/THREE.Scene.)
+        renderer (js/THREE.WebGLRenderer. #js {:antialias true})
         world (create-empty-world)
         entities (conj (create-blocks) (create-ground))]
     (.set (.-position camera) 10 10 15)

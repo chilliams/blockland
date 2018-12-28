@@ -5,8 +5,7 @@
             [blockland.entities :as entities]
             [blockland.firstperson :as firstperson]
             [blockland.gameloop :as gameloop]
-            [blockland.player :as player]
-            [three :as three]))
+            [blockland.player :as player]))
 
 (defonce game-state (atom {}))
 
@@ -36,7 +35,7 @@
   (update game :entities conj entity))
 
 (defn add-chunk! [data]
-  (let [texture-loader (three/TextureLoader.)]
+  (let [texture-loader (js/THREE.TextureLoader.)]
     (.load
      texture-loader
      "/texture.png"
@@ -50,7 +49,6 @@
   (let [command (.-command (.-data e))
         data (.-data (.-data e))]
     (when (= command "mesh")
-      (js/console.log data)
       (add-chunk! data))))
 
 (defonce worker
@@ -90,6 +88,9 @@
   (let [{:keys [camera]} @game-state]
     (.set (.-position camera) 0 50 0)
     (.lookAt camera 0 20 0))
+
+  (let [{:keys [renderer]} @game-state]
+    (.setClearColor renderer 0x87ceeb))
 
 
   )

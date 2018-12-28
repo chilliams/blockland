@@ -1,6 +1,5 @@
 (ns blockland.entities
-  (:require [blockland.ammo :as ammo]
-            [three :as three]))
+  (:require [blockland.ammo :as ammo]))
 
 (defn create-box-shape [geometry]
   (.computeBoundingBox geometry)
@@ -22,8 +21,8 @@
     body))
 
 (defn create-static-entity [geometry x y z]
-  (let [material (three/MeshNormalMaterial.)
-        mesh (three/Mesh. geometry material)
+  (let [material (js/THREE.MeshNormalMaterial.)
+        mesh (js/THREE.Mesh. geometry material)
         col (create-box-shape geometry)
         body (create-body col x y z)]
     (.set (.-position mesh) x y z)
@@ -31,19 +30,19 @@
      :body body}))
 
 (defn create-ground [x y z]
-  (create-static-entity (three/BoxGeometry. 40 1 40) x y z))
+  (create-static-entity (js/THREE.BoxGeometry. 4 1 4) x y z))
 
 (defn create-wall-horizontal [x y z]
-  (create-static-entity (three/BoxGeometry. 40 20 1) x y z))
+  (create-static-entity (js/THREE.BoxGeometry. 40 20 1) x y z))
 
 (defn create-wall-vertical [x y z]
-  (create-static-entity (three/BoxGeometry. 1 20 40) x y z))
+  (create-static-entity (js/THREE.BoxGeometry. 1 20 40) x y z))
 
 (defn create-character [world x y z]
-  (let [geometry (three/CylinderGeometry. 2 2 6)
-        material (three/MeshNormalMaterial.)
-        mesh (three/Mesh. geometry material)
-        ghost-shape (js/Ammo.btCapsuleShape. 2 2)
+  (let [geometry (js/THREE.CylinderGeometry. 0.5 0.5 2)
+        material (js/THREE.MeshNormalMaterial.)
+        mesh (js/THREE.Mesh. geometry material)
+        ghost-shape (js/Ammo.btCapsuleShape. 0.5 1.5)
         ghost-object (js/Ammo.btPairCachingGhostObject.)]
     (.set (.-position mesh) x y z)
     (.setWorldTransform ghost-object (ammo/transform x y z))
@@ -75,51 +74,75 @@
         body (create-body shape x y z)
 
         ;; TODO: use correct mesh
-        geometry (three/CylinderGeometry. 2 2 6)
-        material (three/MeshNormalMaterial.)
-        mesh (three/Mesh. geometry material)]
+        geometry (js/THREE.CylinderGeometry. 2 2 6)
+        material (js/THREE.MeshNormalMaterial.)
+        mesh (js/THREE.Mesh. geometry material)]
     (.set (.-position mesh) x y z)
 
     {:mesh mesh
      :body body}))
 
+(defn create-chunk-shape [position indices]
+  (let [shape (js/Ammo.btTriangleMesh.)]
+    (doseq [i (range 0 (.-length position) 3)]
+      (.findOrAddVertex shape
+                        (js/Ammo.btVector3. (* 2 (aget position i))
+                                            (* 2 (aget position (+ 1 i)))
+                                            (* 2 (aget position (+ 2 i))))
+                        false))
+    (doseq [i (range 0 (.-length indices) 3)]
+      (.addTriangleIndices shape
+                           (aget indices i)
+                           (aget indices (+ 1 i))
+                           (aget indices (+ 2 i))))
+    (js/Ammo.btBvhTriangleMeshShape. shape true)))
+
 (defn three-mesh [x y z]
-  (let [geometry (three/BufferGeometry.)
+  (let [geometry (js/THREE.BufferGeometry.)
         vertices (js/Float32Array. #js [-1.0, -1.0,  1.0,
 	                                      1.0, -1.0,  1.0,
 	                                      1.0,  1.0,  1.0,
 
 	                                      1.0,  1.0,  1.0,
 	                                      -1.0,  1.0,  1.0,
-	                                      -1.0, -1.0,  1.0])]
-    (.addAttribute geometry "position" (three/BufferAttribute. vertices 3))
-    (let [material (three/MeshBasicMaterial. #js {"color" 0xff000})
-          mesh (three/Mesh. geometry material)]
+	                                      -1.0, -1.0,  1.0])
+        indices (js/Uint16Array. #js [1 2 3 4 5 6])
+        shape (create-chunk-shape vertices indices)
+        body (create-body shape x y z)]
+    (.addAttribute geometry "position" (js/THREE.BufferAttribute. vertices 3))
+    (let [material (js/THREE.MeshBasicMaterial. #js {"color" 0xff000})
+          mesh (js/THREE.Mesh. geometry material)]
       (.set (.-position mesh) x y z)
-      {:mesh mesh})))
+      {:mesh mesh
+       :body body})))
 
 (defn create-chunk [data texture]
   (let [indices (.-indices data)
         normal (.-normal data)
         position (.-position data)
         uv (.-uv data)
-        geometry (three/BufferGeometry.)]
-    (.setIndex geometry (three/BufferAttribute. indices 1))
-    (.addAttribute geometry "normal" (three/BufferAttribute. normal 3))
-    (.addAttribute geometry "position" (three/BufferAttribute. position 3))
-    (.addAttribute geometry "uv" (three/BufferAttribute. uv 2))
-    (let [material (three/MeshBasicMaterial. #js {"map" texture})
-          mesh (three/Mesh. geometry material)]
-      ;; (.set (.-position mesh) 1 7 1)
-      {:mesh mesh})))
+        geometry (js/THREE.BufferGeometry.)
+        shape (create-chunk-shape position indices)
+        body (create-body shape 0 0 0)]
+    (.setIndex geometry (js/THREE.BufferAttribute. indices 1))
+    (.addAttribute geometry "normal" (js/THREE.BufferAttribute. normal 3))
+    (.addAttribute geometry "position" (js/THREE.BufferAttribute. position 3))
+    (.addAttribute geometry "uv" (js/THREE.BufferAttribute. uv 2))
+    (.scale geometry 2 2 2)
+    (let [material (js/THREE.MeshBasicMaterial. #js {"map" texture})
+          mesh (js/THREE.Mesh. geometry material)]
+      {:mesh mesh
+       :body body})))
 
 (comment
 
   (create-mesh 0 0 0)
 
-  (let [geometry (three/BoxGeometry. 1 20 40)
-        material (three/MeshNormalMaterial.)
-        mesh (three/Mesh. geometry material)]
+  (js/console.log (js/Ammo.btTriangleMesh.))
+
+  (let [geometry (js/THREE.BoxGeometry. 1 20 40)
+        material (js/THREE.MeshNormalMaterial.)
+        mesh (js/THREE.Mesh. geometry material)]
     (.set (.-position mesh) 1 2 3)
     (js/JSON.stringify (.-position mesh)))
 

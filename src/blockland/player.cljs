@@ -1,6 +1,5 @@
 (ns blockland.player
-  (:require [blockland.ammo :as ammo]
-            [three :as three]))
+  (:require [blockland.ammo :as ammo]))
 
 (defn update-movement! [{:keys [ghost-object controller]}
                         camera
@@ -9,7 +8,7 @@
 
   ;; move camera
   (let [{:keys [delta-x delta-y]} mouse
-        tmp (three/Vector3.)]
+        tmp (js/THREE.Vector3.)]
     (.rotateOnWorldAxis camera (.-up camera) (- (* 0.002 delta-x)))
     (.getWorldDirection camera tmp)
     (-> tmp
@@ -20,18 +19,19 @@
   ;; make physics object face correct direction
   (let [old-transform (.getWorldTransform ghost-object)
         translation (.getOrigin old-transform)
-        tmp (.getWorldDirection camera (three/Vector3.))
+        tmp (.getWorldDirection camera (js/THREE.Vector3.))
         quat (js/Ammo.btQuaternion. (.-x tmp) (.-y tmp) (.-z tmp) 0)
         new-transform (js/Ammo.btTransform. quat translation)]
-    (.setWorldTransform ghost-object new-transform))
+    ;; (.setWorldTransform ghost-object new-transform)
+    )
 
   (let [walk-direction (js/Ammo.btVector3. 0 0 0)
         camera-direction (-> camera
-                             (.getWorldDirection (three/Vector3.))
+                             (.getWorldDirection (js/THREE.Vector3.))
                              (.setY 0)
                              (.normalize)
                              (ammo/three-v3-to-bullet-v3))
-        tmp (three/Vector3. 0 0 0)]
+        tmp (js/THREE.Vector3. 0 0 0)]
     (when (keys-pressed "w")
       (.op_add walk-direction camera-direction))
     (when (keys-pressed "s")
@@ -50,7 +50,7 @@
             (.normalize)
             (.multiplyScalar 1))))
     (.op_add walk-direction (ammo/three-v3-to-bullet-v3 tmp))
-    (.op_mul walk-direction (* 10 delta-time))
+    (.op_mul walk-direction (* 6 delta-time))
     (.setWalkDirection controller walk-direction)
 
     (when (keys-pressed " ")
@@ -62,7 +62,8 @@
                     (.getWorldTransform)
                     (.getOrigin)
                     (ammo/xyz))]
-    (.set (.-position camera) x (+ y 40) z)))
+    ;; y + 3 so camera is at the top of the object
+    (.set (.-position camera) x (+ y 1) z)))
 
 (defn player-system! [{:keys [camera entities]} delta-time input]
   (doseq [{:keys [character player]} entities]
