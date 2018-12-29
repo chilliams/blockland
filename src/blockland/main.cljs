@@ -22,7 +22,7 @@
           )
   (let [{:keys [renderer]} @game-state]
     (.appendChild (.-body js/document) (.-domElement renderer))
-    (gameloop/setup-input-events!)
+    (gameloop/setup-input-events! (.-domElement renderer))
     (gameloop/run-game! (fn [data] (game-loop! data)))))
 
 
@@ -109,5 +109,6 @@
 
   (let [{:keys [scene]} @game-state]
     (set! (.-background scene) (js/THREE.Color. 0xccffff))
-    (set! (.-fog scene) (js/THREE.FogExp2. 0xccffff 0.01)))
+    (set! (.-fog scene) (js/THREE.FogExp2. 0xccffff 0.007)))
+
   )

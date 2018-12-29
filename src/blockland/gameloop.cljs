@@ -25,9 +25,8 @@
                  (fn [e]
                    (handle-mousemove e))))
 
-(defn setup-input-events! []
-  (let [canvas (dom/getElementByTagNameAndClass "canvas")]
-    (bind-events-to-canvas! canvas))
+(defn setup-input-events! [canvas]
+  (bind-events-to-canvas! canvas)
 
   (events/listen js/document
                  EventType/KEYDOWN
@@ -43,14 +42,21 @@
                    (let [key (.-key e)]
                      (swap! keys-pressed #(disj % key))))))
 
+(defonce stats
+  (let [stats (js/Stats.)]
+    (.appendChild (.-body js/document) (.-dom stats))
+    stats))
+
 (defn run-game! [loop-fn]
   (let [clock (js/THREE.Clock.)]
     (letfn [(animate! []
-              (js/requestAnimationFrame animate!)
+              (.begin stats)
               (loop-fn {:delta-time (.getDelta clock)
                         :input {:keys-pressed @keys-pressed
                                 :mouse @mouse-move}})
-              (reset! mouse-move {:delta-x 0 :delta-y 0}))]
+              (reset! mouse-move {:delta-x 0 :delta-y 0})
+              (.end stats)
+              (js/requestAnimationFrame animate!))]
       (js/requestAnimationFrame animate!))))
 
 (comment

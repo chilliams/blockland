@@ -20,7 +20,7 @@
                 90
                 (/ js/window.innerWidth js/window.innerHeight)
                 0.02
-                300)
+                100000)
         scene (js/THREE.Scene.)
         renderer (js/THREE.WebGLRenderer. #js {:antialias true})
         world (create-empty-world)
@@ -29,7 +29,7 @@
                          :player true)]]
 
     (set! (.-background scene) (js/THREE.Color. 0xccffff))
-    (set! (.-fog scene) (js/THREE.FogExp2. 0xccffff 0.01))
+    (set! (.-fog scene) (js/THREE.FogExp2. 0xccffff 0.007))
     (let [ambientLight (js/THREE.AmbientLight. 0x999999)
           directionalLight (js/THREE.DirectionalLight. 0xffffff 0.7)]
       (.add scene ambientLight)
