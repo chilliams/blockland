@@ -16,15 +16,6 @@
         (.normalize))
     (.rotateOnWorldAxis camera tmp (- (* 0.002 delta-y))))
 
-  ;; make physics object face correct direction
-  (let [old-transform (.getWorldTransform ghost-object)
-        translation (.getOrigin old-transform)
-        tmp (.getWorldDirection camera (js/THREE.Vector3.))
-        quat (js/Ammo.btQuaternion. (.-x tmp) (.-y tmp) (.-z tmp) 0)
-        new-transform (js/Ammo.btTransform. quat translation)]
-    ;; (.setWorldTransform ghost-object new-transform)
-    )
-
   (let [walk-direction (js/Ammo.btVector3. 0 0 0)
         camera-direction (-> camera
                              (.getWorldDirection (js/THREE.Vector3.))
@@ -54,7 +45,7 @@
     (.setWalkDirection controller walk-direction)
 
     (when (keys-pressed " ")
-      (.setJumpSpeed controller 15)
+      (.setJumpSpeed controller 12)
       (.jump controller)))
 
   ;; match camera position to physics simulation

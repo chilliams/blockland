@@ -7,7 +7,7 @@
 (js/importScripts "/js/chunkworker.js")
 
 (defn handle-message [e]
-  (let [size 5]
+  (let [size 6]
     (doseq [[x z] (sort-by (fn [p] (reduce + (map #(* % %) p)))
                            (for [x (range (- size) size)
                                  z (range (- size) size)]

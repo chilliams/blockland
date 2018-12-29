@@ -20,7 +20,8 @@
         (-> body
             (.getMotionState)
             (.getWorldTransform transform))
-        (apply-transform-to-mesh! transform mesh)))))
+        (apply-transform-to-mesh! transform mesh)))
+    (js/Ammo.destroy transform)))
 
 (def max-sub-steps 5)
 (def fixed-time-step (/ 1 60))

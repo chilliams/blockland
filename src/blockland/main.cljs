@@ -3,9 +3,9 @@
             [blockland.bullet :as bullet]
             [blockland.client :as client]
             [blockland.entities :as entities]
-            [blockland.firstperson :as firstperson]
             [blockland.gameloop :as gameloop]
-            [blockland.player :as player]))
+            [blockland.player :as player]
+            [blockland.setup :as setup]))
 
 (defonce game-state (atom {}))
 
@@ -17,7 +17,7 @@
 
 (defn start-game! []
   (reset! game-state
-          (firstperson/init-game)
+          (setup/init-game)
           ;; (basicdemo/init-game)
           )
   (let [{:keys [renderer]} @game-state]
@@ -34,16 +34,20 @@
     (.add scene mesh))
   (update game :entities conj entity))
 
-(defn add-chunk! [data]
+(defonce texture
   (let [texture-loader (js/THREE.TextureLoader.)]
     (.load
      texture-loader
      "/texture.png"
      (fn [texture]
-       (swap!
-        game-state
-        (fn [game]
-          (add-entity-to-game! game (entities/create-chunk data texture))))))))
+       (set! (.-minFilter texture) js/THREE.LinearFilter)
+       (set! (.-magFilter texture) js/THREE.NearestFilter)))))
+
+(defn add-chunk! [data]
+  (swap!
+   game-state
+   (fn [game]
+     (add-entity-to-game! game (entities/create-chunk data texture)))))
 
 (defn handle-worker-message! [e]
   (let [command (.-command (.-data e))
@@ -62,7 +66,7 @@
   (let [{:keys [renderer]} @game-state]
     (.remove (.-domElement renderer)))
   (reset! game-state
-          (firstperson/init-game)
+          (setup/init-game)
           ;; (basicdemo/init-game)
           )
   (let [{:keys [renderer]} @game-state]
@@ -93,4 +97,17 @@
     (.setClearColor renderer 0x87ceeb))
 
 
+  (let [{:keys [scene]} @game-state
+        ambientLight (js/THREE.AmbientLight. 0xbbbbbb)
+        directionalLight (js/THREE.DirectionalLight. 0xffffff 0.5)]
+    (.add scene ambientLight)
+    (-> (.-position directionalLight)
+        (.set 1 1 0.6)
+        (.normalize))
+    (.add scene directionalLight))
+
+
+  (let [{:keys [scene]} @game-state]
+    (set! (.-background scene) (js/THREE.Color. 0xccffff))
+    (set! (.-fog scene) (js/THREE.FogExp2. 0xccffff 0.01)))
   )

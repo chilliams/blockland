@@ -1,4 +1,4 @@
-(ns blockland.firstperson
+(ns blockland.setup
   (:require [blockland.entities :as entities]))
 
 (defn create-empty-world []
@@ -25,22 +25,31 @@
         renderer (js/THREE.WebGLRenderer. #js {:antialias true})
         world (create-empty-world)
         entities [(entities/create-ground 0 50 0)
-                  ;; (entities/create-wall-horizontal 0 10 -20)
-                  ;; (entities/create-wall-horizontal 0 10 20)
-                  ;; (entities/create-wall-vertical 20 10 0)
-                  ;; (entities/create-wall-vertical -20 10 0)
-                  ;; (entities/three-mesh 1 1 1)
                   (assoc (entities/create-character world 0 65 0)
                          :player true)]]
+
+    (set! (.-background scene) (js/THREE.Color. 0xccffff))
+    (set! (.-fog scene) (js/THREE.FogExp2. 0xccffff 0.01))
+    (let [ambientLight (js/THREE.AmbientLight. 0x999999)
+          directionalLight (js/THREE.DirectionalLight. 0xffffff 0.7)]
+      (.add scene ambientLight)
+      (-> (.-position directionalLight)
+          (.set 0.7 1 0.4)
+          (.normalize))
+      (.add scene directionalLight))
+
     (.set (.-position camera) 30 40 30)
     (.lookAt camera 0 25 0)
+
     (doseq [{:keys [mesh body]} entities]
       (when body
         (.addRigidBody world body))
       (when mesh
         (.add scene mesh)))
+
     (.setSize renderer js/window.innerWidth js/window.innerHeight)
-    (.setClearColor renderer 0x87ceeb 1)
+    (.setClearColor renderer 0xccffff 1)
+
     {:camera camera
      :scene scene
      :world world

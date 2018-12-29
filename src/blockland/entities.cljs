@@ -129,7 +129,8 @@
     (.addAttribute geometry "position" (js/THREE.BufferAttribute. position 3))
     (.addAttribute geometry "uv" (js/THREE.BufferAttribute. uv 2))
     (.scale geometry 2 2 2)
-    (let [material (js/THREE.MeshBasicMaterial. #js {"map" texture})
+    (let [material (js/THREE.MeshLambertMaterial.
+                    #js {"map" texture})
           mesh (js/THREE.Mesh. geometry material)]
       {:mesh mesh
        :body body})))
@@ -141,7 +142,8 @@
   (js/console.log (js/Ammo.btTriangleMesh.))
 
   (let [geometry (js/THREE.BoxGeometry. 1 20 40)
-        material (js/THREE.MeshNormalMaterial.)
+        material (js/THREE.MeshPhongMaterial. #js {"color" 0xffffff
+                                                   "specular" 0x050505})
         mesh (js/THREE.Mesh. geometry material)]
     (.set (.-position mesh) 1 2 3)
     (js/JSON.stringify (.-position mesh)))
