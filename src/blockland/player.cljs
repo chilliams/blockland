@@ -4,7 +4,8 @@
 (defn update-movement! [{:keys [ghost-object controller]}
                         {:keys [camera world highlighter]}
                         delta-time
-                        {:keys [mouse keys-pressed]}]
+                        {:keys [mouse keys-pressed]}
+                        {:keys [focus-block!]}]
 
   ;; move camera
   (let [{:keys [delta-x delta-y]} mouse
@@ -48,6 +49,15 @@
       (.setJumpSpeed controller 10)
       (.jump controller))
 
+    ;; match camera position to physics simulation
+    (let [[x y z] (-> ghost-object
+                      (.getWorldTransform)
+                      (.getOrigin)
+                      (ammo/xyz))]
+      ;; y + 3 so camera is at the top of the object
+      (.set (.-position camera) x (+ y 0.75) z))
+
+    ;; raycast to hit block
     (let [ray-from (ammo/three-v3-to-bullet-v3 (.-position camera))
           ray-to (-> camera
                      (.getWorldDirection (js/THREE.Vector3.))
@@ -60,20 +70,14 @@
       (set! (.-m_rayToWorld ray-test-cb) ray-to)
       (.rayTest world ray-from ray-to ray-test-cb)
       (if (.hasHit ray-test-cb)
-        (let [[x y z] (ammo/hit-block ray-test-cb)]
-          (.set (.-position highlighter) x y z))
-        (.set (.-position highlighter) 0 0 0))))
+        (let [block-pos (ammo/hit-block ray-test-cb)
+              [x y z] block-pos]
+          (.set (.-position highlighter) x y z)
+          (focus-block! (map #(- % 0.5) block-pos)))
+        (do (.set (.-position highlighter) 0 0 0)
+            (focus-block! nil))))))
 
-  ;; match camera position to physics simulation
-  (let [[x y z] (-> ghost-object
-                    (.getWorldTransform)
-                    (.getOrigin)
-                    (ammo/xyz))]
-    ;; y + 3 so camera is at the top of the object
-    (.set (.-position camera) x (+ y 0.75) z)))
-
-(defn player-system! [{:keys [entities] :as game} delta-time input]
+(defn player-system! [{:keys [entities] :as game} delta-time input events]
   (doseq [{:keys [character player]} entities]
     (when player
-      (update-movement! character game delta-time input)
-      )))
+      (update-movement! character game delta-time input events))))

@@ -9,30 +9,33 @@
 
 (defonce game-state (atom {}))
 
-(defn game-loop! [{:keys [delta-time input]}]
-  (let [{:keys [camera scene renderer] :as game} @game-state]
-    (.render renderer scene camera)
-    (bullet/bullet-system! game delta-time)
-    (player/player-system! game delta-time input)))
+(defn find-first [f coll]
+  (first (filter f coll)))
 
-(defn start-game! []
-  (reset! game-state
-          (setup/init-game)
-          ;; (basicdemo/init-game)
-          )
-  (let [{:keys [renderer]} @game-state]
-    (.appendChild (.-body js/document) (.-domElement renderer))
-    (gameloop/setup-input-events! (.-domElement renderer))
-    (gameloop/run-game! (fn [data] (game-loop! data)))))
+(defn add-entity-to-game! [{:keys [scene world entities] :as game}
+                           {:keys [chunk mesh body] :as entity}]
 
+  (defn chunk-match [entity]
+    (= chunk (entity :chunk)))
 
-(defn add-entity-to-game! [{:keys [scene world] :as game}
-                          {:keys [mesh body] :as entity}]
-  (when body
-    (.addRigidBody world body))
-  (when mesh
-    (.add scene mesh))
-  (update game :entities conj entity))
+  (defn filter-chunk [entities chunk]
+    (filter #(not (chunk-match %)) entities))
+
+  (let [game (if chunk
+               (update game :entities filter-chunk chunk)
+               game)
+        ripped (filter chunk-match entities)]
+    (doseq [{:keys [body mesh]} ripped]
+      (when body
+        (.removeRigidBody world body))
+      (when mesh
+        (.remove scene mesh)))
+
+    (when body
+      (.addRigidBody world body))
+    (when mesh
+      (.add scene mesh))
+    (update game :entities conj entity)))
 
 (defonce texture
   (let [texture-loader (js/THREE.TextureLoader.)]
@@ -58,6 +61,36 @@
 (defonce worker
   (client/start-worker (fn [e] (handle-worker-message! e))))
 
+(defn focus-block! [block]
+  (if block
+    (swap! game-state assoc :focused-block block)
+    (swap! game-state dissoc :focused-block)))
+
+(defn remove-block! []
+  (when-let [block (@game-state :focused-block)]
+    (let [msg #js {:command "remove-block"
+                   :data (clj->js block)}]
+      (.postMessage worker msg))))
+
+(def events {:focus-block! focus-block!
+             :remove-block! remove-block!})
+
+(defn game-loop! [{:keys [delta-time input]}]
+  (let [{:keys [camera scene renderer] :as game} @game-state]
+    (.render renderer scene camera)
+    (bullet/bullet-system! game delta-time)
+    (player/player-system! game delta-time input events)))
+
+(defn start-game! []
+  (reset! game-state
+          (setup/init-game)
+          ;; (basicdemo/init-game)
+          )
+  (let [{:keys [renderer]} @game-state]
+    (.appendChild (.-body js/document) (.-domElement renderer))
+    (gameloop/setup-input-events! (.-domElement renderer) events)
+    (gameloop/run-game! (fn [data] (game-loop! data)))))
+
 (defn init []
   (-> (js/Ammo)
       (.then start-game!)))
@@ -71,7 +104,9 @@
           )
   (let [{:keys [renderer]} @game-state]
     (.appendChild (.-body js/document) (.-domElement renderer))
-    (gameloop/bind-events-to-canvas! (.-domElement renderer))))
+    (gameloop/bind-events-to-canvas!
+     (.-domElement renderer)
+     {:remove-block! remove-block!})))
 
 (comment
 
@@ -110,5 +145,11 @@
   (let [{:keys [scene]} @game-state]
     (set! (.-background scene) (js/THREE.Color. 0xccffff))
     (set! (.-fog scene) (js/THREE.FogExp2. 0xccffff 0.01)))
+
+  (print (:focused-block @game-state))
+
+  (-> @game-state
+      (:entities)
+      (nth 9))
 
   )

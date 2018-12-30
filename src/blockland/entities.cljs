@@ -119,7 +119,8 @@
        :body body})))
 
 (defn create-chunk [data texture]
-  (let [indices (.-indices data)
+  (let [id (.-id data)
+        indices (.-indices data)
         normal (.-normal data)
         position (.-position data)
         uv (.-uv data)
@@ -133,7 +134,8 @@
     (let [material (js/THREE.MeshLambertMaterial.
                     #js {"map" texture})
           mesh (js/THREE.Mesh. geometry material)]
-      {:mesh mesh
+      {:chunk (js->clj id)
+       :mesh mesh
        :body body})))
 
 (comment

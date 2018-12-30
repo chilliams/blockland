@@ -6,7 +6,7 @@
 
 (js/importScripts "/js/chunkworker.js")
 
-(defn handle-message [e]
+(defn make-world []
   (let [size 6]
     (doseq [[x z] (sort-by (fn [p] (reduce + (map #(* % %) p)))
                            (for [x (range (- size) size)
@@ -17,7 +17,21 @@
                       #js {:command "mesh"
                            :data result})))))
 
-(defn add-event-listener []
-  (js/self.addEventListener "message" handle-message))
+(defmulti handle-msg #(object/get % "command"))
+(defmethod handle-msg
+  "remove-block"
+  [msg]
+  (let [block (object/get msg "data")
+        results (js/Module.remove_block block)]
+    (doseq [new-mesh results]
+      (.postMessage js/self
+                    #js {:command "mesh"
+                         :data new-mesh}))))
 
-(object/set js/Module "onRuntimeInitialized" handle-message)
+(defn on-message [event]
+  (let [msg (.-data event)]
+    (handle-msg msg)))
+
+(set! (.-onmessage js/self) on-message)
+
+(object/set js/Module "onRuntimeInitialized" make-world)

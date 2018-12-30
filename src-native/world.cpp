@@ -8,7 +8,7 @@
 
 namespace World {
 
-const int CHUNK_HEIGHT = 32, CHUNK_WIDTH = 32;
+const int CHUNK_HEIGHT = 32, CHUNK_WIDTH = 16;
 const double N_SCALE = 0.15;
 const double ISO_VAL = 0.34;
 const double HN_SCALE = 0.028;
