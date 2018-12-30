@@ -54,8 +54,10 @@
                      (ammo/three-v3-to-bullet-v3)
                      (.op_mul 3)
                      (.op_add ray-from))
-          ;; TODO: use btKinematicClosestNotMeRayResultCallback
-          ray-test-cb (js/Ammo.ClosestRayResultCallback. ray-from ray-to)]
+          ray-test-cb (js/Ammo.btKinematicClosestNotMeRayResultCallback.
+                       ghost-object)]
+      (set! (.-m_rayFromWorld ray-test-cb) ray-from)
+      (set! (.-m_rayToWorld ray-test-cb) ray-to)
       (.rayTest world ray-from ray-to ray-test-cb)
       (if (.hasHit ray-test-cb)
         (let [[x y z] (ammo/hit-block ray-test-cb)]

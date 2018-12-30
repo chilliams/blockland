@@ -16,13 +16,25 @@
     (.setOrigin transform origin)
     transform))
 
+
+(defn rollup [side]
+  (for [i (range 3)]
+    (let [x (side i)
+          rx (js/Math.round x)]
+      (if (< (js/Math.abs (- x rx)) 0.0001)
+        rx
+        x))))
+
+
 (defn hit-block [ray-test-cb]
   (let [side (xyz (.-m_hitNormalWorld ray-test-cb))
         pos (pos? (reduce + side))
         [sx sy sz] side
+        hit-spot (xyz (.-m_hitPointWorld ray-test-cb))
+        ;; correct for floating point
+        hit-spot (rollup hit-spot)
         adjustment (if pos
                      #(-> % (js/Math.floor) (+ 0.5))
                      #(-> % (js/Math.ceil) (- 0.5)))
-        hit-spot (xyz (.-m_hitPointWorld ray-test-cb))
         [x y z] (map adjustment hit-spot)]
     [(- x sx) (- y sy) (- z sz)]))
