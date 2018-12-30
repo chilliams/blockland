@@ -1,12 +1,11 @@
 (ns blockland.main
-  (:require [blockland.basicdemo :as basicdemo]
-            [blockland.bullet :as bullet]
-            [blockland.client :as client]
+  (:require [blockland.bullet :as bullet]
             [blockland.entities :as entities]
             [blockland.gameloop :as gameloop]
             [blockland.player :as player]
             [blockland.setup :as setup]
-            [blockland.startup :as startup]))
+            [blockland.startup :as startup]
+            [goog.dom :as dom]))
 
 (defonce game-state (atom {}))
 
@@ -62,6 +61,8 @@
     (player/player-system! game delta-time input events)))
 
 (defn start-game! [{:keys [texture worker] :as dependencies}]
+  (.remove (dom/getElement "loading"))
+
   (reset! game-state (merge (setup/init-game) dependencies))
 
   (.postMessage worker #js {:command "make-world" :data 5})
