@@ -25,7 +25,7 @@
                (update game :entities filter-chunk chunk)
                game)
         ripped (filter chunk-match entities)]
-    (doseq [{:keys [body mesh]} ripped]
+    (doseq [{:keys [body mesh chunk]} ripped]
       (when body
         (.removeRigidBody world body))
       (when mesh
@@ -52,9 +52,15 @@
    (fn [game]
      (add-entity-to-game! game (entities/create-chunk data texture)))))
 
+(declare worker)
+
 (defn handle-worker-message! [e]
   (let [command (.-command (.-data e))
         data (.-data (.-data e))]
+    (when (= command "alive")
+      (let [msg #js {:command "make-world"
+                     :data 5}]
+        (.postMessage worker msg)))
     (when (= command "mesh")
       (add-chunk! data))))
 
