@@ -29,6 +29,13 @@
     {:mesh mesh
      :body body}))
 
+(defn create-highlighter []
+  (let [geometry (js/THREE.BoxGeometry. 1.01 1.01 1.01)
+        material (js/THREE.MeshBasicMaterial. #js {"wireframe" true
+                                                   "color" 0x000000})
+        mesh (js/THREE.Mesh. geometry material)]
+    {:mesh mesh}))
+
 (defn create-ground [x y z]
   (create-static-entity (js/THREE.BoxGeometry. 4 1 4) x y z))
 
@@ -39,12 +46,8 @@
   (create-static-entity (js/THREE.BoxGeometry. 1 20 40) x y z))
 
 (defn create-character [world x y z]
-  (let [geometry (js/THREE.CylinderGeometry. 0.5 0.5 2)
-        material (js/THREE.MeshNormalMaterial.)
-        mesh (js/THREE.Mesh. geometry material)
-        ghost-shape (js/Ammo.btCapsuleShape. 0.5 1.5)
+  (let [ghost-shape (js/Ammo.btCapsuleShape. 0.25 0.75)
         ghost-object (js/Ammo.btPairCachingGhostObject.)]
-    (.set (.-position mesh) x y z)
     (.setWorldTransform ghost-object (ammo/transform x y z))
     (.setCollisionShape ghost-object ghost-shape)
     (.setCollisionFlags ghost-object 16)
@@ -54,8 +57,7 @@
                       0.35)]
       (.addCollisionObject world ghost-object 32 -1)
       (.addAction world controller)
-      {:mesh mesh
-       :character {:ghost-object ghost-object
+      {:character {:ghost-object ghost-object
                    :controller controller}})))
 
 (defn create-mesh-shape []
@@ -86,9 +88,9 @@
   (let [shape (js/Ammo.btTriangleMesh.)]
     (doseq [i (range 0 (.-length position) 3)]
       (.findOrAddVertex shape
-                        (js/Ammo.btVector3. (* 2 (aget position i))
-                                            (* 2 (aget position (+ 1 i)))
-                                            (* 2 (aget position (+ 2 i))))
+                        (js/Ammo.btVector3. (aget position i)
+                                            (aget position (+ 1 i))
+                                            (aget position (+ 2 i)))
                         false))
     (doseq [i (range 0 (.-length indices) 3)]
       (.addTriangleIndices shape
@@ -128,7 +130,6 @@
     (.addAttribute geometry "normal" (js/THREE.BufferAttribute. normal 3))
     (.addAttribute geometry "position" (js/THREE.BufferAttribute. position 3))
     (.addAttribute geometry "uv" (js/THREE.BufferAttribute. uv 2))
-    (.scale geometry 2 2 2)
     (let [material (js/THREE.MeshLambertMaterial.
                     #js {"map" texture})
           mesh (js/THREE.Mesh. geometry material)]

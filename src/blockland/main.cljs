@@ -109,6 +109,6 @@
 
   (let [{:keys [scene]} @game-state]
     (set! (.-background scene) (js/THREE.Color. 0xccffff))
-    (set! (.-fog scene) (js/THREE.FogExp2. 0xccffff 0.007)))
+    (set! (.-fog scene) (js/THREE.FogExp2. 0xccffff 0.01)))
 
   )

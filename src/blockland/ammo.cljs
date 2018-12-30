@@ -15,3 +15,14 @@
     (.setIdentity transform)
     (.setOrigin transform origin)
     transform))
+
+(defn hit-block [ray-test-cb]
+  (let [side (xyz (.-m_hitNormalWorld ray-test-cb))
+        pos (pos? (reduce + side))
+        [sx sy sz] side
+        adjustment (if pos
+                     #(-> % (js/Math.floor) (+ 0.5))
+                     #(-> % (js/Math.ceil) (- 0.5)))
+        hit-spot (xyz (.-m_hitPointWorld ray-test-cb))
+        [x y z] (map adjustment hit-spot)]
+    [(- x sx) (- y sy) (- z sz)]))

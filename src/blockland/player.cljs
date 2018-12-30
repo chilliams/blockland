@@ -2,7 +2,7 @@
   (:require [blockland.ammo :as ammo]))
 
 (defn update-movement! [{:keys [ghost-object controller]}
-                        camera
+                        {:keys [camera world highlighter]}
                         delta-time
                         {:keys [mouse keys-pressed]}]
 
@@ -41,12 +41,26 @@
             (.normalize)
             (.multiplyScalar 1))))
     (.op_add walk-direction (ammo/three-v3-to-bullet-v3 tmp))
-    (.op_mul walk-direction (* 6 delta-time))
+    (.op_mul walk-direction (* 3 delta-time))
     (.setWalkDirection controller walk-direction)
 
     (when (keys-pressed " ")
-      (.setJumpSpeed controller 12)
-      (.jump controller)))
+      (.setJumpSpeed controller 10)
+      (.jump controller))
+
+    (let [ray-from (ammo/three-v3-to-bullet-v3 (.-position camera))
+          ray-to (-> camera
+                     (.getWorldDirection (js/THREE.Vector3.))
+                     (ammo/three-v3-to-bullet-v3)
+                     (.op_mul 3)
+                     (.op_add ray-from))
+          ;; TODO: use btKinematicClosestNotMeRayResultCallback
+          ray-test-cb (js/Ammo.ClosestRayResultCallback. ray-from ray-to)]
+      (.rayTest world ray-from ray-to ray-test-cb)
+      (if (.hasHit ray-test-cb)
+        (let [[x y z] (ammo/hit-block ray-test-cb)]
+          (.set (.-position highlighter) x y z))
+        (.set (.-position highlighter) 0 0 0))))
 
   ;; match camera position to physics simulation
   (let [[x y z] (-> ghost-object
@@ -54,10 +68,10 @@
                     (.getOrigin)
                     (ammo/xyz))]
     ;; y + 3 so camera is at the top of the object
-    (.set (.-position camera) x (+ y 1) z)))
+    (.set (.-position camera) x (+ y 0.75) z)))
 
-(defn player-system! [{:keys [camera entities]} delta-time input]
+(defn player-system! [{:keys [entities] :as game} delta-time input]
   (doseq [{:keys [character player]} entities]
     (when player
-      (update-movement! character camera delta-time input)
+      (update-movement! character game delta-time input)
       )))

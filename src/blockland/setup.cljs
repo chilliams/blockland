@@ -24,12 +24,14 @@
         scene (js/THREE.Scene.)
         renderer (js/THREE.WebGLRenderer. #js {:antialias true})
         world (create-empty-world)
+        highlighter (entities/create-highlighter)
         entities [(entities/create-ground 0 50 0)
+                  highlighter
                   (assoc (entities/create-character world 0 65 0)
                          :player true)]]
 
     (set! (.-background scene) (js/THREE.Color. 0xccffff))
-    (set! (.-fog scene) (js/THREE.FogExp2. 0xccffff 0.007))
+    (set! (.-fog scene) (js/THREE.FogExp2. 0xccffff 0.01))
     (let [ambientLight (js/THREE.AmbientLight. 0x999999)
           directionalLight (js/THREE.DirectionalLight. 0xffffff 0.7)]
       (.add scene ambientLight)
@@ -54,4 +56,5 @@
      :scene scene
      :world world
      :entities entities
-     :renderer renderer}))
+     :renderer renderer
+     :highlighter (:mesh highlighter)}))
