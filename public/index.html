@@ -6,10 +6,42 @@
      body {
 	     margin: 0;
      }
+
+     .crosshair {
+       position: fixed;
+       top: 50%;
+       left: 50%;
+       margin-top: -10px;
+       margin-left: -10px;
+       height: 20px;
+       width: 20px;
+     }
+
+     .crosshair:before, .crosshair:after {
+       content: "";
+       position: absolute;
+       z-index: -1;
+       background: #fff;
+     }
+
+     .crosshair:before {
+       left: 62%;
+       width: 6%;
+       margin-left: -15%;
+       height: 100%;
+     }
+
+     .crosshair:after {
+       top: 62%;
+       height: 6%;
+       margin-top: -15%;
+       width: 100%;
+     }
     </style>
   </head>
   <body>
     <div id="loading">Loading...</div>
+    <div class="crosshair"></div>
     <script src="/deps/ammo.wasm.js"></script>
     <script src="/deps/three.min.js"></script>
     <script src="/deps/stats.min.js"></script>

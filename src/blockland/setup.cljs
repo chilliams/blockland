@@ -25,9 +25,8 @@
         renderer (js/THREE.WebGLRenderer. #js {:antialias true})
         world (create-empty-world)
         highlighter (entities/create-highlighter)
-        entities [(entities/create-ground 0 50 0)
-                  highlighter
-                  (assoc (entities/create-character world 0 65 0)
+        entities [highlighter
+                  (assoc (entities/create-character world 0 25 0)
                          :player true)]]
 
     (set! (.-background scene) (js/THREE.Color. 0xccffff))

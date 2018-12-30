@@ -65,7 +65,7 @@
 
   (reset! game-state (merge (setup/init-game) dependencies))
 
-  (.postMessage worker #js {:command "make-world" :data 5})
+  (.postMessage worker #js {:command "make-world" :data 10})
 
   (let [remove-block! (fn []
                         (when-let [block (@game-state :focused-block)]
