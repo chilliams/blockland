@@ -1,7 +1,13 @@
-(ns blockland.client)
+(ns blockland.client
+  (:require [goog.object :as object]))
 
-(defn start-worker [callback]
+(defn start-worker! [{:keys [callback onmessage]}]
   (let [worker (js/Worker. "/js/worker.js")]
-    (js/console.log worker)
-    (set! (.-onmessage worker) callback)
+    (set!
+     (.-onmessage worker)
+     (fn [e]
+       (let [command (object/getValueByKeys e "data" "command")]
+         (if (= command "alive")
+           (callback worker)
+           (onmessage e)))))
     worker))

@@ -5,7 +5,8 @@
             [blockland.entities :as entities]
             [blockland.gameloop :as gameloop]
             [blockland.player :as player]
-            [blockland.setup :as setup]))
+            [blockland.setup :as setup]
+            [blockland.startup :as startup]))
 
 (defonce game-state (atom {}))
 
@@ -37,82 +38,53 @@
       (.add scene mesh))
     (update game :entities conj entity)))
 
-(defonce texture
-  (let [texture-loader (js/THREE.TextureLoader.)]
-    (.load
-     texture-loader
-     "/texture.png"
-     (fn [texture]
-       (set! (.-minFilter texture) js/THREE.LinearFilter)
-       (set! (.-magFilter texture) js/THREE.NearestFilter)))))
-
 (defn add-chunk! [data]
   (swap!
    game-state
-   (fn [game]
+   (fn [{:keys [texture] :as game}]
      (add-entity-to-game! game (entities/create-chunk data texture)))))
-
-(declare worker)
 
 (defn handle-worker-message! [e]
   (let [command (.-command (.-data e))
         data (.-data (.-data e))]
-    (when (= command "alive")
-      (let [msg #js {:command "make-world"
-                     :data 5}]
-        (.postMessage worker msg)))
     (when (= command "mesh")
       (add-chunk! data))))
-
-(defonce worker
-  (client/start-worker (fn [e] (handle-worker-message! e))))
 
 (defn focus-block! [block]
   (if block
     (swap! game-state assoc :focused-block block)
     (swap! game-state dissoc :focused-block)))
 
-(defn remove-block! []
-  (when-let [block (@game-state :focused-block)]
-    (let [msg #js {:command "remove-block"
-                   :data (clj->js block)}]
-      (.postMessage worker msg))))
-
-(def events {:focus-block! focus-block!
-             :remove-block! remove-block!})
-
-(defn game-loop! [{:keys [delta-time input]}]
+(defn game-loop! [{:keys [delta-time input]} events]
   (let [{:keys [camera scene renderer] :as game} @game-state]
     (.render renderer scene camera)
     (bullet/bullet-system! game delta-time)
     (player/player-system! game delta-time input events)))
 
-(defn start-game! []
-  (reset! game-state
-          (setup/init-game)
-          ;; (basicdemo/init-game)
-          )
-  (let [{:keys [renderer]} @game-state]
+(defn start-game! [{:keys [texture worker] :as dependencies}]
+  (reset! game-state (merge (setup/init-game) dependencies))
+
+  (.postMessage worker #js {:command "make-world" :data 5})
+
+  (let [remove-block! (fn []
+                        (when-let [block (@game-state :focused-block)]
+                          (let [msg #js {:command "remove-block"
+                                         :data (clj->js block)}]
+                            (.postMessage worker msg))))
+
+        events {:focus-block! focus-block!
+                :remove-block! remove-block!}
+
+        {:keys [renderer]} @game-state]
+
     (.appendChild (.-body js/document) (.-domElement renderer))
     (gameloop/setup-input-events! (.-domElement renderer) events)
-    (gameloop/run-game! (fn [data] (game-loop! data)))))
+    (gameloop/run-game! (fn [data] (game-loop! data events)))))
 
 (defn init []
-  (-> (js/Ammo)
-      (.then start-game!)))
-
-(defn reset-game! []
-  (let [{:keys [renderer]} @game-state]
-    (.remove (.-domElement renderer)))
-  (reset! game-state
-          (setup/init-game)
-          ;; (basicdemo/init-game)
-          )
-  (let [{:keys [renderer]} @game-state]
-    (.appendChild (.-body js/document) (.-domElement renderer))
-    (gameloop/bind-events-to-canvas!
-     (.-domElement renderer)
-     {:remove-block! remove-block!})))
+  (startup/start-dependencies!
+   {:done-loading! start-game!
+    :handle-worker-message! handle-worker-message!}))
 
 (comment
 
@@ -120,8 +92,6 @@
     (doseq [{:keys [character]} entities]
       (when-let [{:keys [controller]} character]
         (.setGravity controller 0))))
-
-  (reset-game!)
 
   (swap!
    game-state
