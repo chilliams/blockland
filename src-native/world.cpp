@@ -27,8 +27,7 @@ private:
 
   // REFACTOR: name this better
   bool shouldRender(int x, int y, int z) {
-    if (x < 0 || y < 0 || z < 0 || x >= CHUNK_WIDTH || y >= CHUNK_HEIGHT ||
-        z >= CHUNK_WIDTH) {
+    if (x < 0 || y < 0 || z < 0 || x >= CHUNK_WIDTH || z >= CHUNK_WIDTH) {
       return false;
     }
     return blocks[x][y][z].type == Material::empty;

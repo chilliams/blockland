@@ -23,13 +23,10 @@
 (defmethod handle-msg
   "add-block"
   [msg]
-  (js/console.dir js/Module)
   (let [data (object/get msg "data")
         position (object/get data "position")
         type (object/get data "type")
         material (object/getValueByKeys js/Module "Material" type)
-        _ (print {:pos position
-                  :mat material})
         results (js/Module.add_block position material)]
     (.postMessage js/self
                   #js {:command "mesh"

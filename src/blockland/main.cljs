@@ -75,15 +75,27 @@
 
   (reset! game-state (merge (setup/init-game) dependencies))
 
-  (.postMessage worker #js {:command "make-world" :data 10})
+  (.postMessage worker #js {:command "make-world" :data 7})
 
   (let [remove-block! (fn []
-                        (when-let [block (@game-state :focused-block)]
-                          (let [msg #js {:command "remove-block"
-                                         :data (clj->js block)}]
-                            (.postMessage worker msg))))
+                        (let [focus (@game-state :focused-block)
+                              block (:remove-block focus)]
+                          (when block
+                            (let [msg #js {:command "remove-block"
+                                           :data (clj->js block)}]
+                              (.postMessage worker msg)))))
+
+        add-block! (fn []
+                     (let [focus (@game-state :focused-block)
+                           block (:add-block focus)]
+                       (when block
+                         (let [msg #js {:command "add-block"
+                                        :data (clj->js {:position block
+                                                        :type "grass"})}]
+                           (.postMessage worker msg)))))
 
         events {:focus-block! focus-block!
+                :add-block! add-block!
                 :remove-block! remove-block!}
 
         {:keys [renderer]} @game-state]

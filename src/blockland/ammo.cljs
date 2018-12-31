@@ -37,4 +37,5 @@
                      #(-> % (js/Math.floor) (+ 0.5))
                      #(-> % (js/Math.ceil) (- 0.5)))
         [x y z] (map adjustment hit-spot)]
-    [(- x sx) (- y sy) (- z sz)]))
+    {:add-pos [x y z]
+     :remove-pos [(- x sx) (- y sy) (- z sz)]}))

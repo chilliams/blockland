@@ -70,10 +70,11 @@
       (set! (.-m_rayToWorld ray-test-cb) ray-to)
       (.rayTest world ray-from ray-to ray-test-cb)
       (if (.hasHit ray-test-cb)
-        (let [block-pos (ammo/hit-block ray-test-cb)
-              [x y z] block-pos]
+        (let [{:keys [remove-pos add-pos]} (ammo/hit-block ray-test-cb)
+              [x y z] remove-pos]
           (.set (.-position highlighter) x y z)
-          (focus-block! (map #(- % 0.5) block-pos)))
+          (focus-block! {:add-block (map #(- % 0.5) add-pos)
+                         :remove-block (map #(- % 0.5) remove-pos)}))
         (do (.set (.-position highlighter) 0 0 0)
             (focus-block! nil))))))
 

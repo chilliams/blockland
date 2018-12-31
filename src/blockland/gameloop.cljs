@@ -13,13 +13,15 @@
           dy (.-movementY e)]
       (reset! mouse-move {:delta-x dx :delta-y dy}))))
 
-(defn bind-events-to-canvas! [canvas {:keys [remove-block!]}]
+(defn bind-events-to-canvas! [canvas {:keys [add-block! remove-block!]}]
   (events/listen canvas
                  EventType/MOUSEDOWN
                  (fn [e]
                    (when (= canvas (.-pointerLockElement js/document))
                      (case (.-button e)
-                       0 (remove-block!)))
+                       0 (remove-block!)
+                       2 (add-block!)
+                       nil))
                    (.requestPointerLock canvas)
                    (.preventDefault e)))
 
