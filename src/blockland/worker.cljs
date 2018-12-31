@@ -18,7 +18,7 @@
       (let [result (js/Module.make_chunk #js [x 0 z])]
         (.postMessage js/self
                       #js {:command "mesh"
-                           :data result})))))
+                           :data #js [result]})))))
 
 (defmethod handle-msg
   "add-block"
@@ -31,21 +31,18 @@
         _ (print {:pos position
                   :mat material})
         results (js/Module.add_block position material)]
-    (doseq [new-mesh results]
-      (.postMessage js/self
-                    #js {:command "mesh"
-                         :data new-mesh}))))
+    (.postMessage js/self
+                  #js {:command "mesh"
+                       :data results})))
 
 (defmethod handle-msg
   "remove-block"
   [msg]
   (let [block (object/get msg "data")
         results (js/Module.remove_block block)]
-    (js/console.log "removing a block")
-    (doseq [new-mesh results]
-      (.postMessage js/self
-                    #js {:command "mesh"
-                         :data new-mesh}))))
+    (.postMessage js/self
+                  #js {:command "mesh"
+                       :data results})))
 
 (defmethod handle-msg
   "ping"
@@ -55,7 +52,6 @@
 
 (defn on-message [event]
   (let [msg (.-data event)]
-    (js/console.log "handle a msg")
     (handle-msg msg)))
 
 (set! (.-onmessage js/self) on-message)

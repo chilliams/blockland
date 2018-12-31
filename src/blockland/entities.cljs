@@ -134,7 +134,7 @@
     (let [material (js/THREE.MeshLambertMaterial.
                     #js {"map" texture})
           mesh (js/THREE.Mesh. geometry material)]
-      {:chunk (js->clj id)
+      {:chunk-id (js->clj id)
        :mesh mesh
        :body body})))
 

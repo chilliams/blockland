@@ -5,6 +5,7 @@
             [blockland.player :as player]
             [blockland.setup :as setup]
             [blockland.startup :as startup]
+            [goog.array :as garray]
             [goog.dom :as dom]))
 
 (defonce game-state (atom {}))
@@ -12,42 +13,51 @@
 (defn find-first [f coll]
   (first (filter f coll)))
 
-(defn add-entity-to-game! [{:keys [scene world entities] :as game}
-                           {:keys [chunk mesh body] :as entity}]
+(defn chunk-match [entity chunk-ids]
+  (let [entity-chunk-id (entity :chunk-id)
+        result (chunk-ids entity-chunk-id)]
+    result))
 
-  (defn chunk-match [entity]
-    (= chunk (entity :chunk)))
+(defn remove-chunks-to-replace [entities chunk-ids]
+  (filter (fn [entity] (not (chunk-match entity chunk-ids))) entities))
 
-  (defn filter-chunk [entities chunk]
-    (filter #(not (chunk-match %)) entities))
+(defn add-chunks-to-game! [{:keys [scene world entities texture] :as game}
+                           chunk-datas]
 
-  (let [game (if chunk
-               (update game :entities filter-chunk chunk)
-               game)
-        ripped (filter chunk-match entities)]
-    (doseq [{:keys [body mesh chunk]} ripped]
+  (let [chunks (js->clj
+                (garray/map chunk-datas
+                            (fn [chunk-data]
+                              (entities/create-chunk chunk-data texture))))
+        chunk-ids (set (map :chunk-id chunks))
+        game (update game :entities remove-chunks-to-replace chunk-ids)
+        ripped (filter (fn [e] (chunk-match e chunk-ids)) entities)]
+
+    (doseq [{:keys [body mesh chunk-id]} ripped]
+      (.removeRigidBody world body)
+      (js/Ammo.destroy body)
+      (.remove scene mesh)
+      (.dispose (.-geometry mesh))
+      (.dispose (.-material mesh)))
+
+    (doseq [{:keys [body mesh]} chunks]
       (when body
-        (.removeRigidBody world body))
+        (.addRigidBody world body))
       (when mesh
-        (.remove scene mesh)))
+        (.add scene mesh)))
 
-    (when body
-      (.addRigidBody world body))
-    (when mesh
-      (.add scene mesh))
-    (update game :entities conj entity)))
+    (update game :entities concat chunks)))
 
-(defn add-chunk! [data]
+(defn add-chunks! [chunks]
   (swap!
    game-state
    (fn [{:keys [texture] :as game}]
-     (add-entity-to-game! game (entities/create-chunk data texture)))))
+     (add-chunks-to-game! game chunks))))
 
 (defn handle-worker-message! [e]
   (let [command (.-command (.-data e))
         data (.-data (.-data e))]
     (when (= command "mesh")
-      (add-chunk! data))))
+      (add-chunks! data))))
 
 (defn focus-block! [block]
   (if block
