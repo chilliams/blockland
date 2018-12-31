@@ -20,7 +20,7 @@
                          (.postMessage js/self
                                        #js {:command "mesh"
                                             :data #js [result]})))
-                     500))))
+                     (+ 10 (js/Math.abs (* x z)))))))
 
 (defmethod handle-msg
   "add-block"
