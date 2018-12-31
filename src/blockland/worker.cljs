@@ -15,10 +15,12 @@
                            (for [x (range (- size) size)
                                  z (range (- size) size)]
                              [x z]))]
-      (let [result (js/Module.make_chunk #js [x 0 z])]
-        (.postMessage js/self
-                      #js {:command "mesh"
-                           :data #js [result]})))))
+      (js/setTimeout (fn []
+                       (let [result (js/Module.make_chunk #js [x 0 z])]
+                         (.postMessage js/self
+                                       #js {:command "mesh"
+                                            :data #js [result]})))
+                     500))))
 
 (defmethod handle-msg
   "add-block"

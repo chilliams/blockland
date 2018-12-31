@@ -26,7 +26,7 @@
         world (create-empty-world)
         highlighter (entities/create-highlighter)
         entities [highlighter
-                  (assoc (entities/create-character world 0 25 0)
+                  (assoc (entities/create-character world 0 35 0)
                          :player true)]]
 
     (set! (.-background scene) (js/THREE.Color. 0xccffff))
